@@ -2,11 +2,16 @@
 defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
 defined("CONFIGEXAMPLE") ? null : define('CONFIGEXAMPLE', 'settings.ini.php-example');
 defined("SECRET") ? null : define('SECRET', 'secret.txt');
-require dirname(__FILE__) . '/vendor/autoload.php';
+require_once dirname(__FILE__) . '/vendor/autoload.php';
+require_once dirname(__FILE__) . '/util.php';
 $config = new Config_Lite(CONFIG);
 $hash = $config->get('general', 'password', '0');
 $title = $config->get('general', 'title', '0');
 $username = $config->get('general', 'userNameInput', '0');
+if ($hash == 'muximux' && $username == 'admin') {
+	write_log("Using default password, prehashing pass.","WARN");
+	$hash = password_hash($hash,PASSWORD_DEFAULT);
+}
 $cssColor = ((parseCSS($css,'.colorgrab','color') != false) ? parseCSS($css,'.colorgrab','color') : '#FFFFFF');
 $themeColor = $config->get('general','color',$cssColor);
     
@@ -24,7 +29,7 @@ if(isset($_POST['username'])) {
 		write_log('Successfully logged in.');
 		exit();
     } else {
-		write_log('Error logging in with username of '+ $_POST['username'] +'.','E');
+		write_log('Error logging in with username of '. $_POST['username'] .'.','ERROR');
 	}
 } 
 echo '
@@ -35,11 +40,11 @@ echo '
     <meta name="theme-color" class="droidtheme" content="#DFDFDF" />
     <meta name="msapplication-navbutton-color" class="mstheme" content="#DFDFDF" />
     <meta name="apple-mobile-web-app-status-bar-style" class="iostheme" content="#DFDFDF" />
-    <script src="js/jquery-2.2.4.min.js"></script>
+    <script src="js/jquery-3.2.1.min.js"></script>
     <script src="js/jquery-ui.min.js"></script>
     <link rel="stylesheet" href="css/jquery-ui.min.css">
     <link rel="stylesheet" href="css/login.css">
-    <link rel="stylesheet" href="css/theme/'.getTheme().'.css">
+    <link rel="stylesheet" href="'.getThemeFile().'">
     <link rel="stylesheet" href="css/font-awesome.min.css"/>
     <title>Login to '.getTitle().'</title>
     <script src="js/login.js"></script>

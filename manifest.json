@@ -2,16 +2,19 @@
 	"name": "Muximux",
 	"icons": [
 		{
-			"src": "images\/favicon\/android-chrome-192x192.png?v=ngGoyLXN9n",
+			"src": "images\/favicon\/android-chrome-192x192.png",
 			"sizes": "192x192",
 			"type": "image\/png"
 		},
 		{
-			"src": "images\/favicon\/android-chrome-256x256.png?v=ngGoyLXN9n",
+			"src": "images\/favicon\/android-chrome-256x256.png",
 			"sizes": "256x256",
 			"type": "image\/png"
 		}
 	],
 	"theme_color": "#ffffff",
+	"background_color": "#000000",
+	"scope": "/",
+	"start_url": "/",
 	"display": "standalone"
 }

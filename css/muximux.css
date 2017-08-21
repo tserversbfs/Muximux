@@ -20,7 +20,8 @@ html {
 
 body {
     font-size: 0;
-    font-family: "PT Sans", sans-serif;
+    font-family: 'Roboto', sans-serif !important;
+    font-weight: 300;
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -84,6 +85,18 @@ p {
     -webkit-transition-timing-function: ease-in-out;
     /* Safari and Chrome */
     transition-timing-function: ease-in-out;
+}
+
+.btn-group-justified {
+    width: 100%;
+    -webkit-box-pack: center!important;
+    -webkit-justify-content: center!important;
+    -ms-flex-pack: center!important;
+    justify-content: center!important;
+}
+
+#instructionsContainer p {
+    font-size: .6em;
 }
 
 .drawerItem.full {
@@ -496,6 +509,13 @@ body ul {
     padding-right: 15px;
 }
 
+.slider.slider-horizontal {
+    width: 100%;
+}
+
+.fip-bootstrap.icons-selector .fip-icons-container {
+    text-align: center;
+}
 
 .sp-replacer {
     width: 100% !important;
@@ -602,7 +622,7 @@ input[type='button'] {
     width: 90%;
     margin: auto;
     text-align: left;
-    font-size: 1.6rem;
+    font-size: 1.0rem;
     display: none;
 }
 
@@ -617,7 +637,7 @@ input[type='button'] {
     height: 100%;
     padding: 10px 10px;
     text-align: left;
-    font-size: 1.6rem;
+    font-size: 1.0rem;
     display: none;
 }
 
@@ -881,7 +901,7 @@ input[type='button'] {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 .smallLogo {
@@ -898,12 +918,12 @@ input[type='button'] {
 }
 
 .custom-handle {
-    width: 30px;
-    height: 15px;
-    top: 50%;
-    margin-top: -.8em;
-    text-align: center;
-    line-height: 1.6em;
+    width: 40px !important;
+    height: 15px !important;
+    margin-top: 5px;
+    text-align: center !important;
+    line-height: 1.0em !important;
+    font-size: .5em;
 }
 
 #updateContainer {
@@ -921,9 +941,10 @@ input[type='button'] {
     border-radius: 5px 5px 5px 5px;
 }
 
-label.btn, input, select, textarea {
+label.btn, input:not(.sliderInput), select, textarea {
     height: 34px !important;
 }
+
 
 label.btn {
     width: 100%;

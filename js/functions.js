@@ -51,7 +51,9 @@ function dropDownFixPosition(button, dropdown) {
 }
 
 function settingsEventHandlers() {
-    $('#sortable').sortable();
+    $('#sortable').sortable({
+        handle: ".sortable-handle"
+    });
     // Anytime a radio box for default is changed it unchecks the others
     $('input[type=radio]').change(function() {
         $('input[type=radio]:checked').not(this).prop('checked', false);

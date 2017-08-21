@@ -5,9 +5,18 @@ error_reporting(E_ERROR);
 $errorLogPath = "muximux.log";
 ini_set("error_log", $errorLogPath);
 date_default_timezone_set((date_default_timezone_get() ? date_default_timezone_get() : "America/Chicago"));
-require 'muximux.php';
+require_once 'muximux.php';
+require_once dirname(__FILE__) . '/util.php';
 require_once 'iconindex.php';
 if (is_session_started()) session_destroy();
+if(empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "off"){
+	$redirect = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+	if (isDomainAvailible($redirect)) {
+		header('HTTP/1.1 301 Moved Permanently');
+		header('Location: ' . $redirect);
+		exit();
+	}
+}
 session_start();
 defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
     defined("CONFIGEXAMPLE") ? null : define('CONFIGEXAMPLE', 'settings.ini.php-example');
@@ -21,6 +30,7 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
         if (!USERNAME or isset($_GET['logout']))
                 include('login.php');
     }
+
 ?>
 <!doctype html>
 <!--[if lt IE 7]>
@@ -51,10 +61,12 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
     <link rel="stylesheet" href="css/jquery-ui.min.css"/>
     <link rel="stylesheet" href="css/font-awesome.min.css"/>
     <link rel="stylesheet" href="css/font-muximux.css"/>
+    <link rel="stylesheet" href="css/font-roboto.css"/>
     <link rel="stylesheet" href="css/font-pt_sans.css"/>
     <link rel="stylesheet" href="css/bootstrap.min.css"/>
     <link rel="stylesheet" href="css/bootstrap-grid.min.css"/>
     <link rel="stylesheet" href="css/bootstrap-iconpicker.min.css"/>
+    <link rel="stylesheet" href="css/bootstrap-slider.min.css"/>
     <link rel="stylesheet" href="css/muximux.css"/>
     <link rel="stylesheet" href="<?php echo getThemeFile();?>">
     <link rel="stylesheet" href="css/spectrum.min.css"/>
@@ -113,107 +125,105 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
                     </div>
                 </div>
                 <div class="modal-body text-center">
-
-                        <div class="btn-group" role="group" aria-label="Buttons" id="topButtons">
-                            <a class="btn btn-primary" id="showInstructions"><span class="fa muximux-book"></span> Show Guide</a>
-                            <a class="btn btn-primary" id="showChangelog"><span class="fa muximux-github"></span> Show Updates</a>
-                        </div>
-
+                    <div class="btn-group btn-group-justified" role="group" aria-label="Buttons" id="topButtons">
+                        <a class="btn btn-primary btn-sm" id="showInstructions"><span class="fa muximux-book"></span> Show Guide</a>
+                        <a class="btn btn-primary btn-sm" id="showChangelog"><span class="fa muximux-github"></span> Show Updates</a>
+                    </div>
                     <div id="instructionsContainer" class="alert alert-info">
-                        <h3>Instructions</h3>
+                        <h4>Instructions</h4>
                         <p>The order that you put these blocks in determine in what order they will be listed in the
                             menu.<br>
                             Enable or disable each block and edit the URL to point to your desired location.<br/><br/></p>
                         <h3>General Settings (What does all this stuff do?)</h3>
                         <br>
                         <p>
-                        <h4> Git Branch</h4>
+                        <h5> Git Branch</h5>
                         Select the branch to track on Github for updates.
                         <br><br>
                         </p>
                         <p>
-                        <h4>Theme</h4>
+                        <h5>Theme</h5>
                         Select from one of two pre-defined themes, or create your own.  To create a custom theme, make a copy of either Modern.css or Classic.css in the /css/theme/ directory. Use a one-word theme name (no spaces) for the new file name.  Modify the colors in the new theme file as you like, and then select it in settings.
                         <br><br>
                         </p>
                         <p>
-                        <h4> Color (General settings)</h4>
+                        <h5> Color (General settings)</h5>
                         Select the primary default color used on login, splash screen, and for various other ui elements.
                         <br><br>
                         </p>
                         <p>
-                        <h4> Update Alerts</h4>
+                        <h5> Update Alerts</h5>
                         When enabled, you will receive a pop-up notification when new updates are available.
                         <br><br>
                         </p>
                         <p>
-                        <h4> Splash Screen</h4>
+                        <h5> Splash Screen</h5>
                         When enabled, Muximux will start with a splash page where you can select which application to view.
                         <br><br>
                         </p>
                         <p>
-                        <h4> Dropdown Override</h4>
+                        <h5> Dropdown Override</h5>
                         When enabled, a button will appear in the main Muximux bar that will allow overriding the placement of applications in the dropdown menu when viewed on a display detected as being on a mobile device.  Intended for users who have tablets with a smaller display.
                         <br><br>
                         </p>
                         <p>
-                        <h4> Application Colors</h4>
+                        <h5> Application Colors</h5>
                         Set an individual color for each application.  This will be used in the splash screen and for the tab's selected indicator.  If disabled, the color selected in the general section of settings will be used.
                         <br><br>
                         </p>
                         <p>
-                        <h4> Auto-hide Navbar</h4>
+                        <h5> Auto-hide Navbar</h5>
                         When enabled, the navigation bar will collapse itself into a small strip, and expand on hover.  This is disabled by default for mobile displays.
                         <br><br>
                         </p>
                         <p>
-                        <h4> Use Authentication</h4>
+                        <h5> Use Authentication</h5>
                         When enabled, you can set a username and password which will be required to log into Muximux.  Password is hashed, salted, and stored in settings, so your password is never stored in plain text.
                         <br><br>
                         </p>
-                        <h3>Applications Settings (What does the rest of this stuff do?)</h3>
+                        <h4>Applications Settings (What does the rest of this stuff do?)</h4>
                         <br>
                         <p>
-                        <h4> URL</h4>
+                        <h5> URL</h5>
                         Enter the address of the page you want to load.  See below for instructions when serving Muximux over HTTPS.  Url should be fully formatted: 'http://www.address.com'.
                         <br><br>
                         </p>
                         <p>
-                        <h4> Zoom</h4>
+                        <h5> Zoom</h5>
                         Change the default zoom level for the application.  This value is used to scale the iframe contents in regards to the overall screen size.
                         <br><br>
                         </p>
                         <p>
-                        <h4> Icon</h4>
+                        <h5> Icon</h5>
                         Select from over 2100 different glyph icons to represent your application.
                         <br><br>
                         </p>
                         <p>
-                        <h4> Color</h4>
+                        <h5> Color</h5>
                         Not available if "Application colors" is disabled in General settings.  This color will be used for the application icon in the splash screen, as well as for the "selected" indicator when the application is selected.
                         <br><br>
                         </p>
                         <p>
-                        <h4> Enabled</h4>
+                        <h5> Enabled</h5>
                         Uncheck to hide the application from the main menu without removing it.
                         <br><br>
                         </p>
                         <p>
-                        <h4> Landing</h4>
+                        <h5> Landing</h5>
                         Do not immediately load the page when selected, but instead start at a default landing page for faster loading.
                         <br><br>
                         </p>
                         <p>
-                        <h4> Dropdown</h4>
+                        <h5> Dropdown</h5>
                         Remove the application from the main menu and force it into the dropdown menu.  Applications will be automatically moved to the dropdown menu to accomodate for screen width regardless of this setting.
                         <br><br>
                         </p>
                         <p>
-                        <h4> Default</h4>
+                        <h5> Default</h5>
                         Enable this button to make the application the deafult selected item when Muximux is loaded.
                         <br><br>
                         </p>
-                        <h3>Bookmarking apps contained within Muximux</h3>
+                        <h4>Bookmarking apps contained within Muximux</h4>
                         <p>If you want to go directly to a specific app within Muximux you can use hashes (<code>#</code>) in the URL.
                             For instance, if you have an app called "My app" you could use:<br/>
                             <code><script>document.write(location.href.replace(location.hash,""))</script>#My app</code><br/><br/>
@@ -221,7 +231,7 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
                             Please note that the hashname should be the exact same as the <code>Name</code> you have configured in the settings below.<br/>
                             If you need to, you can replace spaces with underscores (i.e <code>#My_app</code>).
                             <br/><br/></p>
-                        <h3>Running Muximux from SSL-enabled / HTTPS server</h3>
+                        <h4>Running Muximux from SSL-enabled / HTTPS server</h4>
                         <p>Please note that if Muximux is served via HTTPS, any services that are NOT served via HTTPS might
                             be blocked by your web-browser.<br><br>
                             Loading of unsecured content in the context of an SSL encrypted website where you see a green
@@ -245,11 +255,11 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
 
                     </div>
                     <div id="changelogContainer" class="alert alert-warning">
-                        <h3>Updates</h3>
+                        <h4>Updates</h4>
                         <div id="changelog"></div>
                     </div>
                     <div id="backupiniContainer" class="alert alert-warning">
-                        <h3>backup.ini.php Contents</h3>
+                        <h4>backup.ini.php Contents</h4>
                         <div class="text-center">
                             <a class="btn btn-danger" id="removeBackup"><span class="fa muximux-trash"></span> Remove backup.ini.php</a>
                         </div>
@@ -267,7 +277,7 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <div class="modal-title"><h1>Update Notification</h1></div>
+                    <div class="modal-title"><h2>Update Notification</h2></div>
                 </div>
                 <div class="modal-body upgradeBody">
                     <div class="alert alert-info">
@@ -291,7 +301,7 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
             <div class="modal-content logContent" role="document">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <div class="modal-title"><h1>Muximux Log</h1></div>
+                    <div class="modal-title"><h2>Muximux Log</h2></div>
                 </div>
                 <div class="modal-body logBody">
                     <div id="logContainer">
@@ -355,8 +365,17 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
 <script type="text/javascript" src="js/jquery.fonticonpicker.min.js" defer></script>
 <script type="text/javascript" src="js/spectrum.min.js" defer></script>
 <script type="text/javascript" src="js/modernizr-custom-3.3.1.min.js"></script>
+<script type="text/javascript" src="js/bootstrap-slider.js"></script>
 <script type="text/javascript" src="js/jquery.ui.touch-punch.min.js"></script>
 <script type="text/javascript">
+    if('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js').then(function(registration) {
+            // Registration was successful
+        }).catch(function(err) {
+            // registration failed :(
+            console.log('ServiceWorker registration failed: ', err);
+        });
+    }
     var loaded = false;
     jQuery(document).ready(function($) {
         var source = <?php echo imii_generate_fip_source_json( $icomoon_icons, 'class' ); ?>;

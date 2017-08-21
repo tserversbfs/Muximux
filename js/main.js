@@ -7,6 +7,8 @@ jQuery(document).ready(function($) {
     authentication = ($('#authentication-data').attr("data") === 'true');
     tabColor = ($("#tabcolor-data").attr('data') === 'true');
     secret = $('#secret-data').attr("data");
+    rss = ($('#rss-data').attr("data") === 'true');
+    $('.rssUrlGroup').css('display', (rss ? 'block' : 'none'));
 
     $('#pleaseWaitDialog').animate({
         opacity: .25,
@@ -26,14 +28,11 @@ jQuery(document).ready(function($) {
         $('[data-toggle="tooltip"]').tooltip()
     });
 
-    var handle = $(".custom-handle");
-    $( ".slider" ).slider({
-        value: handle.attr("value"),
-        create: function() {
-            handle.text( $( this ).slider( "value" ) );
-        },
-        slide: function( event, ui ) {
-            handle.text( ui.value );
+    var labelSide = "right";
+    console.log("initializing sliders");
+    $('.sliderInput').bootstrapSlider({
+        formatter: function(value) {
+            return 'Current value: ' + value;
         }
     });
 
@@ -53,13 +52,6 @@ jQuery(document).ready(function($) {
         $('.rssGroup').show();
         if (!authentication) {
             $('#splashLogout').addClass('hidden');
-        }
-        if (!($("#splashscreenCheckbox").is(":checked"))) {
-            $('.rssGroup').addClass('hidden');
-            $('.rssUrlGroup').addClass('hidden');
-        }
-        if (!($("#rssCheckbox").is(":checked"))) {
-            $('.rssUrlGroup').addClass('hidden');
         }
         $('#splashModal').modal('show');
         $('#splashModal').addClass("in");
@@ -102,6 +94,7 @@ jQuery(document).ready(function($) {
         setTimeout(function () {
             $('.muximux-refresh').removeClass('fa-spin');
         }, 3900);
+        console.log("Refreshing from reload button.");
         var selectedFrame = $('.cd-tabs-content').find('.selected').children('iframe');
         selectedFrame.attr('src', selectedFrame.attr('src'));
     });
@@ -286,11 +279,6 @@ jQuery(document).ready(function($) {
             tabContentWrapper = tab.children('ul.cd-tabs-content'),
             tabNavigation = tab.find('nav');
 
-        // Preload frame contents
-        $(tab).find('iframe').each(function (i, iframe) {
-            var frameSrc = $(iframe).attr('data-src');
-            $(iframe).attr("src", frameSrc);
-        });
 
         tabItems.on('click', 'a:not(#reload, #hamburger, #override, #logout, #logModalBtn, #showSplash)', function (event) {
             // Set up menu for desktip view
@@ -303,16 +291,25 @@ jQuery(document).ready(function($) {
             resizeIframe(hasDrawer, isMobile); // Call resizeIframe when document is ready
             event.preventDefault();
             var selectedItem = $(this);
+            console.log("CLICK");
             if (!selectedItem.hasClass('selected')) {
                 var selectedTab = selectedItem.data('content'),
                     selectedContent = tabContentWrapper.find('li[data-content="' + selectedTab + '"]'),
                     selectedContentHeight = selectedContent.innerHeight();
-                selectedItem.dblclick(function () {
-                    selectedContent.children('iframe').attr('src', selectedContent.children('iframe').attr('src'));
-                });
                 var srcUrl = selectedContent.children('iframe').data('src');
-                if (srcUrl === undefined || srcUrl === "") {
-                    selectedContent.children('iframe').attr('src', srcUrl);
+                console.log("URL: "+srcUrl);
+                if (srcUrl !== undefined || srcUrl !== "") {
+                    console.log("Made it to thunderdome.");
+                    var protocol = ('https:' === document.location.protocol ? 'https' : 'http');
+                    console.log("Protocol is " + protocol);
+                    if ((protocol === 'https') && (srcUrl.search(protocol) === -1)) {
+                        console.log("Should be replacing with https.");
+                        srcUrl = srcUrl.replace("http","https");
+                    }
+                    console.log("URL: "+srcUrl);
+                    if (selectedContent.children('iframe').attr('src') === undefined) {
+                        selectedContent.children('iframe').attr('src', srcUrl);
+                    }
                 }
                 // Fix issue with color not resetting on settings close
                 if (!(selectedItem.attr("data-title") === "Settings")) {
@@ -330,6 +327,9 @@ jQuery(document).ready(function($) {
                     }, 200);
                 }
             }
+            selectedItem.dblclick(function () {
+                selectedContent.children('iframe').attr('src', selectedContent.children('iframe').attr('src'));
+            });
         });
         // hide the .cd-tabs::after element when tabbed navigation has scrolled to the end (mobile version)
         checkScrolling(tabNavigation);
@@ -352,6 +352,24 @@ jQuery(document).ready(function($) {
             if ($(this).id === 'publicAddress') {
                 value = resetApiUrl($(this).val());
             }
+            if (id === 'authentication') {
+                $('.inputdiv').css('display', (value ? 'block' : 'none'));
+            }
+            if (id === 'rss') {
+                $('.rssUrlGroup').css('display', (value ? 'block' : 'none'));
+            }
+            if (id === 'autohide') {
+                hasDrawer = value;
+                setSelectedColor();
+                resizeIframe(hasDrawer, isMobile);
+            }
+            if (id === 'mobileoverride') {
+                overrideMobile = value;
+                setSelectedColor();
+                resizeIframe(hasDrawer, isMobile);
+            }
+
+
             console.log("Sending param: " + id + " value: " + value);
 
             $.get('muximux.php?secret=' + secret, {id: id, value: value}, function () {

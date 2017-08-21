@@ -10,7 +10,8 @@ ini_set("error_log", $errorLogPath);
 date_default_timezone_set((date_default_timezone_get() ? date_default_timezone_get() : "America/Chicago"));
 defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
 defined("CONFIGEXAMPLE") ? null : define('CONFIGEXAMPLE', 'settings.ini.php-example');
-require dirname(__FILE__) . '/vendor/autoload.php';
+require_once dirname(__FILE__) . '/vendor/autoload.php';
+require_once dirname(__FILE__) . '/util.php';
 require_once 'iconindex.php';
 
 
@@ -29,24 +30,6 @@ if (!$_SESSION['secret']) {
 if (isset($_POST['function']) && isset($_POST['secret'])) {
 	if ($_POST['secret'] == file_get_contents(SECRET)) write_ini();
 } 
-
-// Check if we can open a file.
-function openFile($file, $mode) {
-    if ((file_exists($file) && (!is_writable(dirname($file)) || !is_writable($file))) || !is_writable(dirname($file))) { // If file exists, check both file and directory writeable, else check that the directory is writeable.
-        $message = 'Either the file '. $file .' and/or it\'s parent directory is not writable by the PHP process. Check the permissions & ownership and try again.';
-	if (PHP_SHLIB_SUFFIX === "so") { //Check for POSIX systems.
-            $message .= "  Current permission mode of ". $file. " is " .decoct(fileperms($file) & 0777);
-            $message .= "  Current owner of " . $file . " is ". posix_getpwuid(fileowner($file))['name'];
-            $message .= "  Refer to the README on instructions how to change permissions on the aforementioned files.";
-        } else if (PHP_SHLIB_SUFFIX === "dll") {
-            $message .= "  Detected Windows system, refer to guides on how to set appropriate permissions."; //Can't get fileowner in a trivial manner.
-        }
-	    write_log($message,'E');
-	    setStatus($message);
-        exit;
-    }
-    return fopen($file, $mode);
-}
 
 // Create a secret for communication to the server
 function createSecret() {
@@ -118,8 +101,7 @@ function write_ini()
 // Parse settings.php and create the Muximux elements
 function parse_ini()
 {
-	mapIcons('css/font-muximux.css','.muximux-');
-    $config = new Config_Lite(CONFIG);
+	$config = new Config_Lite(CONFIG);
 	checksetSHA();
     fetchBranches(false);
     $branchArray = getBranches();
@@ -180,18 +162,18 @@ function parse_ini()
 	                        </div>
 	                        <div class='row justify-content-center'>
 	                        	<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
-		                            <label for='updatepopupCheckbox' data-toggle='tooltip' data-placement='top' title='Enable this to receive notifications of updates to Muximux.' class='btn btn-primary btn-sm btn-block". ($updatePopup ? ' active' : '') ."'>
-										<input id='updatepopupCheckbox' name='general_-_updatepopup' type='checkbox'". ($updatePopup ? ' checked' : '') .">Update Alerts
+		                            <label for='updatepopup' data-toggle='tooltip' data-placement='top' title='Enable this to receive notifications of updates to Muximux.' class='btn btn-primary btn-sm btn-block". ($updatePopup ? ' active' : '') ."'>
+										<input id='updatepopup' name='general_-_updatepopup' type='checkbox'". ($updatePopup ? ' checked' : '') .">Update Alerts
 									</label>
 		                        </div>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
-		                            <label for='splashscreenCheckbox' data-toggle='tooltip' data-placement='top' title='Show the splash screen when Muximux loads.' class='btn btn-primary btn-sm btn-block". ($splashScreen ? ' active' : '') ."'>
-										<input id='splashscreenCheckbox' class='settingInput' name='general_-_splashscreen' type='checkbox'".($splashScreen ? ' checked' : '') .">Splash Screen
+		                            <label for='splashscreen' data-toggle='tooltip' data-placement='top' title='Show the splash screen when Muximux loads.' class='btn btn-primary btn-sm btn-block". ($splashScreen ? ' active' : '') ."'>
+										<input id='splashscreen' class='settingInput' name='general_-_splashscreen' type='checkbox'".($splashScreen ? ' checked' : '') .">Splash Screen
 									</label>
 		                        </div>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
-		                            <label for='mobileoverrideCheckbox' class='btn btn-primary btn-sm btn-block". ($mobileOverride ? ' active' : '') ."'>
-		                                <input id='mobileoverrideCheckbox class='settingInput' name='general_-_mobileoverride' type='checkbox'".($mobileOverride ? ' checked' : '').">Mobile Override
+		                            <label for='mobileoverride' class='btn btn-primary btn-sm btn-block". ($mobileOverride ? ' active' : '') ."'>
+		                                <input id='mobileoverride' class='settingInput' name='general_-_mobileoverride' type='checkbox'".($mobileOverride ? ' checked' : '').">Mobile Override
 									</label>
 		                        </div>
 		                        <div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
@@ -216,13 +198,13 @@ function parse_ini()
 								</div>
 							</div>
 							<div class='row justify-content-center'>
-								<div class='userinput appDiv form-group rssUrlGroup". ($rss ? '' : ' hidden') ."'>
+								<div class='userinput appDiv form-group rssUrlGroup'>
 									<label for='rssUrl' class='col-xs-4 control-label right-label'>Feed Url: </label>
 										<div class='col-xs-7 col-sm-5 col-md-3 col-lg-8'>
 										<input id='rssUrl' class='form-control settingInput' general_-_value' name='general_-_rssUrl' value='" . $rssUrl . "'>
 									</div>
 								</div>
-								<div class='inputdiv appDiv form-group". ($authentication ? '' : ' hidden') ."'>
+								<div class='inputdiv appDiv form-group'>
 									<div class='userinput appDiv form-group'>
 										<label for='userNameInput' class='col-xs-4 control-label right-label'>Username: </label>
 											<div class='col-xs-7 col-sm-5 col-md-8'>
@@ -261,7 +243,7 @@ function parse_ini()
             $dd = $config->getBool($section, 'dd', false);
             $pageOutput .= "
 						<div class='applicationContainer card' id='" . $section . "'>
-							<span class='bars fa muximux-bars'></span>
+							<span class='bars fa muximux-bars sortable-handle'></span>
 							<div class='row justify-content-center'>
 							<div class='appDiv form-group'>
 									<label for='" . $section . "_-_url' class='col-xs-6 col-sm-4 control-label left-label'>Name: </label>
@@ -278,9 +260,7 @@ function parse_ini()
 								<div  class='appDiv form-group'>
 									<label for='" . $section . "_-_scale' class='col-xs-6 col-sm-4 control-label col-form-label left-label'>Zoom: </label>
 									<div class='slider-outer col-xs-6 col-md-4 col-lg-3'>
-										<div class='slider'>
-											<div class='ui-slider-handle custom-handle' value='".$scale."'></div>
-										</div>
+										<input class='sliderInput' id='" . $section . "_-_scale' data-slider-id='" . $section . "_-_scale' type='text' data-slider-min='0' data-slider-max='100' data-slider-step='10' data-slider-value='".$scale."'/>
 									</div>
 								</div>
 								<div class='appDiv form-group'>
@@ -413,6 +393,46 @@ function log_contents() {
     return $out;
 }
 
+function isDomainAvailible($domain) {
+	//check, if a valid url is provided
+	if(!filter_var($domain, FILTER_VALIDATE_URL))
+	{
+		return false;
+	}
+	file_get_contents($domain);
+	write_log("Header: ".$http_response_header[0]);
+	$result = (preg_match("/200 OK/",$http_response_header[0]) ? true : false);
+	write_log("CHeck result: ".$result);
+}
+
+function setStartUrl() {
+	$manifest = dirname(__FILE__)."/manifest.json";
+	$reading = fopen($manifest, 'r');
+	$writing = fopen("$manifest.tmp", 'w');
+	$url = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+	$replaced = false;
+
+	while (!feof($reading)) {
+		$line = fgets($reading);
+		if (stristr($line,'start_url')) {
+			write_log("Changing start URL");
+			$newLine = '"start_url":"'.$url.'",'.PHP_EOL;
+			if ($line !== $newLine) $line = $newLine;
+			$replaced = true;
+		}
+		fputs($writing, $line);
+	}
+	fclose($reading); fclose($writing);
+// might as well not overwrite the file if we didn't replace anything
+	if ($replaced)
+	{
+		rename("$manifest.tmp", $manifest);
+	} else {
+		unlink("$manifest.tmp");
+	}
+
+
+}
 
 // Check if the user changes tracking branch, which will change the SHA and trigger an update notification
 function checkBranchChanged() {
@@ -445,30 +465,11 @@ function appColors() {
 function getTheme()
 {
     $config = new Config_Lite(CONFIG);
-    $item = $config->get('general', 'theme', 'classic');
+    $item = $config->get('general', 'theme', 'Classic');
 	return strtolower($item);
 }
 
-function getThemeFile() {
-	$config = new Config_Lite(CONFIG);
-    $item = $config->get('general', 'theme', 'classic');
-	if (file_exists('css/theme/'.$item.'.css')) {
-		return 'css/theme/'.$item.'.css';
-	} else {
-		$item=strtolower($item);
-	}
-	if (file_exists('css/theme/'.$item.'.css')) {
-		return 'css/theme/'.$item.'.css';
-	} else {
-		$item=ucfirst($item);
-	}
-	if (file_exists('css/theme/'.$item.'.css')) {
-		return 'css/theme/'.$item.'.css';
-	} else {
-		$item='theme_default.css';
-		return 'css/'.$item.'.css';
-	}	
-}
+
 
 // List all available themes in directory
 function listThemes() {
@@ -680,14 +681,6 @@ function fetchBranches($skip) {
 
 }
 
-// Echos php information to the java console
-function console_log( $data ) {
-  $output  = "<script>console.log( 'PHP debugger: ";
-  $output .= json_encode(print_r($data, true));
-  $output .= "' );</script>";
-  echo $output;
-}
-
 // This checks whether we have a SHA, and if not, whether we are using git or zip updates and stores
 // the data accordingly
 function checksetSHA() {
@@ -800,10 +793,6 @@ function frameContent() {
     return $item;
 }
 
-function serverProtocol() {
-	return (((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')	|| $_SERVER['SERVER_PORT'] == 443) ? 'https://' : 'http://');
-}
-
 function build_url($parsed_url) {
 	$scheme   = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : serverProtocol();
 	$host     = isset($parsed_url['host']) ? $parsed_url['host'] : "";
@@ -857,11 +846,6 @@ function can_git()
 	return $git;
 }
 
-// Can we execute commands?
-function exec_enabled() {
-    $disabled = explode(', ', ini_get('disable_functions'));
-    return !in_array('exec', $disabled);
-}
 
 // URL parameters
 if (isset($_GET['landing'])) {
@@ -904,12 +888,23 @@ if (isset($_GET['secret'])) {
 		$key = $_GET['id'];
 		$value = $_GET['value'];
 	    $section = 'general';
-    	if (preg_match("/_-_/",$key)) {
+	    $oldHash = getPassHash();
+	    $oldBranch = getBranch();
+	    $terminate = false;
+	    if (preg_match("/_-_/",$key)) {
     		$sections = explode("_-_",$key);
     		$section = $sections[0];
     		$key = $sections[1];
 	    }
-	    if ($key == 'scale') $value = $value/100;
+	    if ($key == 'scale') $value = $value / 100;
+    	    switch ($key) {
+		        case "password":
+			        if ($value != $oldHash) {
+				        write_log('Successfully updated password.', 'I');
+				        $value = password_hash($value, PASSWORD_BCRYPT);
+			        }
+			        break;
+	        }
 	    write_log("Updating value for $key : $value in $section","INFO");
     	$config->set($section,$key,$value);
     	saveConfig($config);
@@ -1053,279 +1048,4 @@ function downloadUpdate($sha) {
 	}
     
     return $result;
-}
-
-// Copy a directory recursively - used to move updates after extraction
-function cpy($source, $dest){
-    if(is_dir($source)) {
-        $dir_handle=opendir($source);
-        while($file=readdir($dir_handle)){
-            if($file!="." && $file!=".."){
-                if(is_dir($source."/".$file)){
-                    if(!is_dir($dest."/".$file)){
-                        mkdir($dest."/".$file);
-                    }
-                    cpy($source."/".$file, $dest."/".$file);
-                } else {
-                    copy($source."/".$file, $dest."/".$file);
-                }
-            }
-        }
-        closedir($dir_handle);
-    } else {
-        copy($source, $dest);
-    }
-}
-
-// Recursively delete the contents of a directory
-function deleteContent($path){
-    try{
-        $iterator = new DirectoryIterator($path);
-        foreach ( $iterator as $fileinfo ) {
-        if($fileinfo->isDot())continue;
-        if($fileinfo->isDir()){
-            if(deleteContent($fileinfo->getPathname()))
-                @rmdir($fileinfo->getPathname());
-            }
-            if($fileinfo->isFile()){
-                @unlink($fileinfo->getPathname());
-                }
-        }
-    } catch ( Exception $e ){
-        // write log
-        return false;
-    }
-    return true;
-}
-
-// This is used by our login script to determine session state 
-function is_session_started() {
-    if ( php_sapi_name() !== 'cli' ) {
-        if ( version_compare(phpversion(), '5.4.0', '>=') ) {
-            return session_status() === PHP_SESSION_ACTIVE ? TRUE : FALSE;
-        } else {
-            return session_id() === '' ? FALSE : TRUE;
-        }
-    }
-    return FALSE;
-}
-
-/**
- * Generate HTML SELECT OPTION along with OPTGROUP
- *
- * You will need to provide the SELECT element yourself as this only generates the optgroup and option elements
- *
- * @param  array  $icomoon_icons The original variable generated by this script
- * @param  string $by            What to print the value by. Possibilities are class, unicode, hex|hexadecimal or key
- * @return string                The optgroup and option for you to echo
- */
-function imii_generate_select_options( $icomoon_icons, $by = 'class' ) {
-	$return = '';
-	$by = strtolower( $by );
-	foreach ( $icomoon_icons as $icons ) {
-		$return .= '<optgroup label="' . htmlspecialchars( $icons['label'] ) . '">';
-		if ( isset( $icons['elements'] ) ) {
-			foreach ( $icons['elements'] as $ic_key => $ic_name ) {
-				$val = $ic_key;
-				if ( $by == 'class' ) {
-					$val = htmlspecialchars( $icons['element_classes'][$ic_key] );
-				} else if ( $by == 'unicode' ) {
-					$val = '&#x' . dechex( $ic_key ) . ';';
-				} else if ( $by == 'hex' || $by == 'hexadecimal' ) {
-					$val = dechex( $ic_key );
-				}
-				$return .= '<option value="' . $val . '">' . $ic_name . '</option>';
-			}
-		}
-		$return .= '</optgroup>';
-	}
-	return $return;
-}
-
-/**
- * Generate the JSON variable for the <code>source</code> option for fontIconPicker
- *
- * You will need to assign it to a variable inside JavaScript code
- * @link https://github.com/micc83/fontIconPicker fontIconPicker Project Page
- *
- * @param  array  $icomoon_icons The original variable generated by this script
- * @param  string $by            What to print the value by. Possibilities are class or key
- * @return string                The JSON which can be assigned to a variable. See example
- */
-function imii_generate_fip_source_json( $icomoon_icons, $by = 'class' ) {
-	$json = array();
-	$by = strtolower( $by );
-	foreach ( $icomoon_icons as $icons ) {
-		$icon_set = array();
-		if ( isset( $icons['elements'] ) ) {
-			foreach ( $icons['elements'] as $ic_key => $ic_name ) {
-				$val = $ic_key;
-				if ( $by == 'class' ) {
-					$val = htmlspecialchars( $icons['element_classes'][$ic_key] );
-				}
-				$icon_set[] = $val;
-			}
-		}
-		$json[$icons['label']] = $icon_set;
-	}
-	return json_encode( $json );
-}
-
-/**
- * Generate the JSON variable for the <code>searchSource</code> option for fontIconPicker
- *
- * You will need to assign it to a variable inside JavaScript code
- * @link https://github.com/micc83/fontIconPicker fontIconPicker Project Page
- *
- * @param  array  $icomoon_icons The original variable generated by this script
- * @return string                The JSON which can be assigned to a variable. See example
- */
-function imii_generate_fip_search_json( $icomoon_icons ) {
-	$json = array();
-	foreach ( $icomoon_icons as $icons ) {
-		$icon_set = array();
-		if ( isset( $icons['elements'] ) ) {
-			foreach ( $icons['elements'] as $ic_key => $ic_name ) {
-				$icon_set[] = $ic_name;
-			}
-		}
-		$json[$icons['label']] = $icon_set;
-	}
-	return json_encode( $json );
-}
-
-
-// This might be excessive for just grabbing one theme value from CSS,
-// but if we ever wanted to make a full theme editor, it could be handy.
-
-function parseCSS($file,$searchSelector,$searchAttribute){
-    $css = file_get_contents($file);
-    preg_match_all( '/(?ims)([a-z0-9\s\.\:#_\-@,]+)\{([^\}]*)\}/', $css, $arr);
-    $result = false;
-    foreach ($arr[0] as $i => $x){
-        $selector = trim($arr[1][$i]);
-        if ($selector == $searchSelector) {
-            $rules = explode(';', trim($arr[2][$i]));
-            $rules_arr = array();
-            foreach ($rules as $strRule){
-                if (!empty($strRule)){
-                    $rule = explode(":", $strRule);
-                    if (trim($rule[0]) == $searchAttribute) {
-                        $result = trim($rule[1]);
-                    }
-                }
-            }
-        }
-    }
-    return $result;
-}
-
-
-// Currently just used outside of the project to generate the iconset names
-// In the future, consider using this to dynamically update the actual .js file that 
-// icon picker uses.
-
-function mapIcons($file,$classSelector){
-	$iconHash = md5_file($file);
-	$config = new Config_Lite(CONFIG);
-	$fileName = basename($file);
-	$storedHash = $config->get('settings','hash_'.$fileName,'');
-    if ($iconHash !== $storedHash) {
-		$css = file_get_contents($file);
-		preg_match_all( '/(?ims)([a-z0-9\s\.\:#_\-@,]+)\{([^\}]*)\}/', $css, $arr);
-		$result = '"",';
-		foreach ($arr[0] as $i => $x){
-			$selector = trim($arr[1][$i]);
-			if (strpos($selector, $classSelector) !== false) {
-				$selector = str_replace($classSelector,'',$selector);
-				$selector = str_replace(':before','',$selector);
-				$result .='"'.$selector.'", ';
-			}
-		}
-		$result = substr_replace($result ,"",-2);
-		$result = '!function($){$.iconset_muximux={iconClass:"muximux",iconClassFix:"muximux-",icons:['.$result.']}}(jQuery);';
-		$file = openFile('js/iconset-muximux.js', "w");
-		fwrite($file, $result);
-		//$config->set('settings','hash_'.$fileName,$iconHash);
-        //saveConfig($config);
-	}
-}
-
-// Appends lines to file and makes sure the file doesn't grow too much
-// You can supply a level, which should be a one-letter code (E for error, D for debug, I for information)
-// If a level is not supplied, it will be assumed to be Informative.
-function write_log($text,$level=null,$caller=false) {
-	if ($level === null) {
-		$level = 'DEBUG';
-	}
-	if (isset($_GET['pollPlayer'])) return;
-	$caller = $caller ? $caller : getCaller();
-	$filename = 'muximux.log';
-	$text = '['.date(DATE_RFC2822) . '] ['.$level.'] ['.$caller . "] - " . trim($text) . PHP_EOL;
-	if (!file_exists($filename)) { touch($filename); chmod($filename, 0666); }
-	if (filesize($filename) > 2*1024*1024) {
-		$filename2 = "$filename.old";
-		if (file_exists($filename2)) unlink($filename2);
-		rename($filename, $filename2);
-		touch($filename); chmod($filename,0666);
-	}
-	if (!is_writable($filename)) die;
-	if (!$handle = fopen($filename, 'a+')) die;
-	if (fwrite($handle, $text) === FALSE) die;
-	fclose($handle);
-}
-
-// Get the name of the function calling write_log
-function getCaller() {
-	$trace = debug_backtrace();
-	$useNext = false;
-	$caller = false;
-	//write_log("TRACE: ".print_r($trace,true),null,true);
-	foreach ($trace as $event) {
-		if ($useNext) {
-			if (($event['function'] != 'require') && ($event['function'] != 'include')) {
-				$caller .= "::" . $event['function'];
-				break;
-			}
-		}
-		if ($event['function'] == 'write_log') {
-			$useNext = true;
-			// Set our caller as the calling file until we get a function
-			$file = pathinfo($event['file']);
-			$caller = $file['filename'] . "." . $file['extension'];
-		}
-	}
-	return $caller;
-}
-
-// Coalesce hack
-function c() {
-	$args = func_get_args();
-	foreach ($args as $arg) {
-		if (!empty($arg)) {
-			return $arg;
-		}
-	}
-	return NULL;
-}
-
-
-function saveConfig(Config_Lite $inConfig) {
-	try {
-		$inConfig->save();
-	} catch (Config_Lite_Exception $e) {
-		echo "\n" . 'Exception Message: ' . $e->getMessage();
-		write_log('Error saving configuration.','ERROR');
-	}
-	$configFile = dirname(__FILE__)."/settings.ini.php";
-	$cache_new = "'; <?php die('Access denied'); ?>"; // Adds this to the top of the config so that PHP kills the execution if someone tries to request the config-file remotely.
-	$cache_new .= file_get_contents($configFile);
-	file_put_contents($configFile,$cache_new);
-}
-
-
-// Echo a message to the user
-function setStatus($message) {
-	$scriptBlock = "<script language='javascript'>alert(\"" . $message . "\");</script>";
-	echo $scriptBlock;
 }
