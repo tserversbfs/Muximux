@@ -44,11 +44,11 @@ body {
 }
 
 iframe {
-    background-color: #41434f;
+    background-color: #41434f !important;
 }
 
 .modal-title {
-    color: #f1f3f2;
+    color: #f1f3f2 !important;
 }
 
 .cd-tabs nav {
@@ -56,24 +56,24 @@ iframe {
 }
 
 .cd-tabs-navigation a {
-    color: #747b8b;
+    color: #747b8b !important;
 
 }
 
 .cd-tabs-navigation a:hover {
-    color: #f1f3f2; /* Hover text colour */
-    background-color: rgba(233, 230, 202, 0.3);
+    color: #f1f3f2 !important; /* Hover text colour */
+    background-color: rgba(233, 230, 202, 0.3) !important;
 }
 
 .cd-tabs-navigation a.selected {
     background-color: #535358   !important; /* Selected tab colour */
-    color: #f1f3f2; /* Selected text colour */
+    color: #f1f3f2 !important; /* Selected text colour */
 }
 
 @media only screen and (min-width: 0px) {
     .cd-tabs-navigation {
-        background-color: #343843; /* Main nav colour */
-        box-shadow: inset 0 -2px 3px rgba(203, 196, 130, 0.06);
+        background-color: #343843 !important; /* Main nav colour */
+        box-shadow: inset 0 -2px 3px rgba(203, 196, 130, 0.06) !important;
     }
 
 
@@ -84,148 +84,151 @@ iframe {
 }
 
 .cd-tabs-content {
-    background: #36363b; /* Content background colour */
+    background: #36363b !important; /* Content background colour */
 }
 
 .cd-tabs-content li p {
-    color: #8493bf;
+    color: #8493bf !important;
 }
 
 .main-nav, .drop-nav {
-    background: #343843;
-    box-shadow: inset 0 -2px 3px rgba(203, 196, 130, 0.06);
+    background: #343843 !important;
+    box-shadow: inset 0 -2px 3px rgba(203, 196, 130, 0.06) !important;
 }
 
 
 .main-nav > li:hover {
-    color: #f1f3f2;
-    background-color: rgba(233, 230, 202, 0.3);
+    color: #f1f3f2 !important;
+    background-color: rgba(233, 230, 202, 0.3) !important;
 }
 
 .main-nav a {
-    color: #747b8b;
+    color: #747b8b !important;
 }
 
 .dd a:hover {
-    color: #f1f3f2;
-    background-color: rgba(233, 230, 202, 0.3);
+    color: #f1f3f2 !important;
+    background-color: rgba(233, 230, 202, 0.3) !important;
 }
 .navbtn a:hover {
-    color: #f1f3f2;
-    background-color: rgba(233, 230, 202, 0.3);
+    color: #f1f3f2 !important;
 }
+
+.navbtn:hover {
+    background-color: rgba(233, 230, 202, 0.3) !important;
+}
+
 .or-active {
-    background-color: rgba(233, 230, 202, 0.3);
+    background-color: rgba(233, 230, 202, 0.3) !important;
 }
 
 .or-active > span {
-    color: #ffffff; /* Hover text colour */
+    color: #ffffff !important; /* Hover text colour */
 
 }
 
 .drop-nav {
-    -webkit-box-shadow: -9px 10px 13px -2px rgba(0, 0, 0, 0.3);
-    -moz-box-shadow: -9px 10px 13px -2px rgba(0, 0, 0, 0.3);
-    box-shadow: -9px 10px 13px -2px rgba(0, 0, 0, 0.3);
+    -webkit-box-shadow: -9px 10px 13px -2px rgba(0, 0, 0, 0.3) !important;
+    -moz-box-shadow: -9px 10px 13px -2px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: -9px 10px 13px -2px rgba(0, 0, 0, 0.3) !important;
 }
 
 .drop-nav li {
-    border-bottom: 1px solid rgba(255, 255, 255, .2);
+    border-bottom: 1px solid rgba(255, 255, 255, .2) !important;
 }
 
 .drop-nav > li:hover, .drop-nav > li:hover a {
-    color: #f1f3f2;
-    background-color: rgba(233, 230, 202, 0.3);
-    -webkit-box-shadow: inset 0px 0px 13px 5px rgba(0, 0, 0, 0.3);
-    -moz-box-shadow: inset 0px 0px 13px 5px rgba(0, 0, 0, 0.3);
-    box-shadow: inset 0px 0px 13px 5px rgba(0, 0, 0, 0.3);
+    color: #f1f3f2 !important;
+    background-color: rgba(233, 230, 202, 0.3) !important;
+    -webkit-box-shadow: inset 0px 0px 13px 5px rgba(0, 0, 0, 0.3) !important;
+    -moz-box-shadow: inset 0px 0px 13px 5px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: inset 0px 0px 13px 5px rgba(0, 0, 0, 0.3) !important;
 }
 
 input[type='text'], select {
-    color: #000;
+    color: #000 !important;
 }
 
 input[type="text"][disabled] {
-    color: #696969;
+    color: #696969 !important;
 }
 
 input[disabled]:hover {
-    background-color: #8b0000;
-    color: #fff;
+    background-color: #8b0000 !important;
+    color: #fff !important;
 }
 
 input[type='button'] {
     color: #FFF;
-    background: #8b0000;
+    background: #8b0000 !important;
 }
 
 input[type='button']:hover {
-    background: #003147;
+    background: #003147 !important;
 }
 
 .modal-body {
-    background: #343843;
+    background: #343843 !important;
 }
 
 .modal-header, .modal-footer {
-    background: #41434f;
+    background: #41434f !important;
 }
 
 .splashHeader {
-	border-right: 1px solid rgba(71, 41, 41, 0.83);
+	border-right: 1px solid rgba(71, 41, 41, 0.83) !important;
 }
 .splashNavBtn {
-	background: #5c5d5c;
-	border-color: rgba(41, 71, 41, 0.83);
+	background: #5c5d5c !important;
+	border-color: rgba(41, 71, 41, 0.83) !important;
 }   
 
 .splashNavBtn:hover {
 	background: #31ac63;;
 }
-.well {
-	background-color: #41434f;
-	border: 1px solid rgba(71, 41, 41, 0.83);
-	box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
-	transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+.card {
+	background-color: #41434f !important;
+	border: 1px solid rgba(71, 41, 41, 0.83) !important;
+	box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23) !important;
+	transition: all 0.3s cubic-bezier(.25,.8,.25,1) !important;
 	
 }
 
-.well:hover {
-  box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+.card:hover {
+  box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22) !important;
 }
 #splashBg {
     background: #777b82; /* Old browsers */
-    background: -moz-linear-gradient(-45deg, #777b82 0%, #343843 100%); /* FF3.6-15 */
-    background: -webkit-linear-gradient(-45deg, #777b82 0%,#343843 100%); /* Chrome10-25,Safari5.1-6 */
-    background: linear-gradient(135deg, #777b82 0%,#343843 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#777b82', endColorstr='#343843',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+    background: -moz-linear-gradient(-45deg, #777b82 0%, #343843 100%) !important; /* FF3.6-15 */
+    background: -webkit-linear-gradient(-45deg, #777b82 0%,#343843 100%) !important; /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(135deg, #777b82 0%,#343843 100%) !important; /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#777b82', endColorstr='#343843',GradientType=1 ) !important; /* IE6-9 fallback on horizontal gradient */
 	
 }
 
 .applicationContainer {
-    background: #f5f6f7;
-    -webkit-border-radius: 5px 5px 5px 5px;
-    border-radius: 5px 5px 5px 5px;
-    -webkit-box-shadow: 5px 5px 5px 1px #000;
-    box-shadow: 5px 5px 5px 1px #000;
-    color: #000;
+    background: #f5f6f7 !important;
+    border-radius: 5px 5px 5px 5px !important;
+    -webkit-box-shadow: 5px 5px 5px 1px #000 !important;
+    box-shadow: 5px 5px 5px 1px #000 !important;
+    color: #000 !important;
 }
 
 #updateContainer {
-    background-color: #343843;
-    color: #f1f3f2;
+    background-color: #343843 !important;
+    color: #f1f3f2 !important;
 }
 
 .close {
-  color: #f1f3f2;
+  color: #f1f3f2 !important;
 }
 
 .close:hover,
 .close:focus {
-  color: #fff;
+  color: #fff !important;
 }
 
 form input {
-    background-color: #fff;
-    color: #000;
+    background-color: #fff !important;
+    color: #000 !important;
 }

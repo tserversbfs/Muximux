@@ -2,20 +2,17 @@
 /*
 * DO NOT CHANGE THIS FILE!
 */
+ini_set("log_errors", 1);
+ini_set('max_execution_time', 300);
+error_reporting(E_ERROR);
+$errorLogPath = "muximux.log";
+ini_set("error_log", $errorLogPath);
+date_default_timezone_set((date_default_timezone_get() ? date_default_timezone_get() : "America/Chicago"));
 defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
 defined("CONFIGEXAMPLE") ? null : define('CONFIGEXAMPLE', 'settings.ini.php-example');
-defined("SECRET") ? null : define('SECRET', 'secret.txt');
 require dirname(__FILE__) . '/vendor/autoload.php';
+require_once 'iconindex.php';
 
-// Check if this is an old installation that needs upgrading.
-if (file_exists('config.ini.php')) {
-    copy('config.ini.php', 'backup.ini.php');
-    unlink('config.ini.php');
-    $upgrade = true;
-    write_log('Converting configuration file from previous Muximux installation.','D');
-} else {
-    $upgrade = false;
-}
 
 // Check if this is our first run and do some things.
 if(!file_exists(CONFIG)){
@@ -23,10 +20,13 @@ if(!file_exists(CONFIG)){
     checksetSHA();
 }
 
+$config = new Config_Lite(CONFIG);
+$_SESSION['secret'] = $config->get("general","secret",false);
+if (!$_SESSION['secret']) {
+	$_SESSION['secret'] = createSecret();
+}
 
 if (isset($_POST['function']) && isset($_POST['secret'])) {
-	write_log("Should be saving settings here.");
-	write_log("We have a secret too: ".$_POST['secret']);
 	if ($_POST['secret'] == file_get_contents(SECRET)) write_ini();
 } 
 
@@ -50,10 +50,11 @@ function openFile($file, $mode) {
 
 // Create a secret for communication to the server
 function createSecret() {
+	$config = new Config_Lite('settings.ini.php');
+	write_log("Creating server secret.");
     $text = uniqid("muximux-", true);
-    $file = openFile(SECRET, "w");
-    fwrite($file, $text);
-    fclose($file);
+    $config->set("general","secret",$text);
+    saveConfig($config);
     return $text;
 }
 
@@ -145,103 +146,105 @@ function parse_ini()
     $title = $config->get('general', 'title', 'Muximux - Application Management Console');
     $pageOutput = "<form class='form-inline'>
 	
-						<div class='applicationContainer row generalContainer' style='cursor:default;'>
-                        <h2>General</h2>
-                        <div class='appDiv form-group'>
-                            <label for='titleInput' class='col-xs-6 col-sm-4 col-md-4 control-label left-label'>Main Title: </label>
-							<div class='col-xs-6 col-sm-8 col-md-8'>
-								<input id='titleInput' type='text' class='form-control form-control-sm' general_-_value' name='general_-_title' value='" . $title . "'>
-							</div>
-                        </div>
-                        <div class='appDiv form-group'>
-							<label for='branch'  class='col-xs-6 col-sm-5 col-md-5 control-label left-label'>Git branch: </label>
-							<div class='col-xs-6 col-sm-2 col-md-2'>
-								<select id='branch' class='form-control form-control-sm custom-select' name='general_-_branch'>".
-									$branchList ."
-								</select>
-							</div>
-                        </div>
-						<div class='appDiv form-group'>
-							<label for='theme' class='col-xs-6 col-sm-4 col-md-4 control-label left-label'>Theme: </label>
-							<div class='col-xs-6 col-sm-2 col-md-2'>
-								<select id='theme' class='form-control form-control-sm custom-select general_-_value' name='general_-_theme'>".
-									listThemes() ."
-								</select>
-							</div>
-						</div>
-                        <div class='appDiv form-group'>
-							<label for='general_-_color' class='col-xs-6 col-sm-4 col-md-5 control-label left-label'>Color: </label>
-							<div class='col-xs-6 col-sm-7 col-md-7'>
-								<input type='text' id='general_-_default' class='appsColor generalColor general_-_color' value='".$themeColor."' name='general_-_color'>
-							</div>
-                        </div>
-						<div class='hidden-xl-up'>
-							<br>
-						</div>
-                        <div class='appDiv form-group'>
-                            <label for='updatepopupCheckbox' class='col-xs-6 col-sm-12 control-label col-form-label form-check-inline'>Update alerts:
-								<input id='updatepopupCheckbox' class='form-check-input form-control general_-_value' name='general_-_updatepopup' type='checkbox' ".($updatePopup ? 'checked' : '') .">
-							</label>
-                        </div>
-						<div class='appDiv form-group'>
-                            <label for='splashscreenCheckbox' class='col-xs-6 col-sm-12 control-label col-form-label form-check-inline'>Splash screen:
-								<input id='splashscreenCheckbox' class='form-check-input form-control general_-_value' name='general_-_splashscreen' type='checkbox' ".($splashScreen ? 'checked' : '') .">
-							</label>
-                        </div>
-						<div class='appDiv form-group'>
-                            <label for='mobileoverrideCheckbox' class='col-xs-6 col-sm-12 control-label col-form-label form-check-inline'>Mobile override:
-                                <input id='mobileoverrideCheckbox' class='form-check-input form-control general_-_value' name='general_-_mobileoverride' type='checkbox' ".($mobileOverride ? 'checked' : '').">
-							</label>
-                        </div>
-                        <div class='appDiv form-group'>
-                            <label for='tabcolorCheckbox' class='col-xs-6 col-sm-12 control-label col-form-label form-check-inline'>App colors:
-								<input id='tabcolorCheckbox' class='form-check-input form-control general_-_value' name='general_-_tabcolor' type='checkbox' " . ($tabColorEnabled ? 'checked' : '').">
-							</label>
-                        </div>
-						<div class='appDiv form-group'>
-                            <label for='autohideCheckbox' class='col-xs-6 col-sm-12 control-label col-form-label form-check-inline'>Auto-hide bar:
-								<input id='autohideCheckbox' class='form-check-input form-control general_-_value' name='general_-_autohide' type='checkbox' ".($autoHide ? 'checked' : '').">
-							</label>
-						</div>
-                        <div class='appDiv form-group'>
-                            <label for='authenticationCheckbox' class='col-xs-6 col-sm-12 control-label col-form-label form-check-inline'>Authentication:
-								<input id='authenticationCheckbox' class='form-check-input form-control general_-_value' name='general_-_authentication' type='checkbox' ".($authentication ? 'checked' : '').">
-							</label>
-                        </div>
-						<div class='appDiv form-group rssGroup'>
-							<label for='rssCheckbox' class='col-xs-12 col-sm-12 control-label col-form-label form-check-inline'>Splash RSS:
-								<input id='rssCheckbox' class='form-check-input form-control general_-_value' name='general_-_rss' type='checkbox' ".($rss ? 'checked' : '').">
-							</label>
-						</div>
-						<div class='userinput appDiv form-group rssUrlGroup'>
-							<label for='rssUrlInput' class='col-xs-4	 control-label right-label'>Feed Url: </label>
-								<div class='col-xs-7 col-sm-5 col-md-8'>
-								<input id='rssUrlInput' type='text' class='form-control' general_-_value' name='general_-_rssUrl' value='" . $rssUrl . "'>
-							</div>
-						</div>
-						<div class='inputdiv appDiv form-group'>
-							<div class='userinput appDiv form-group'>
-								<label for='userName' class='col-xs-4 control-label right-label'>Username: </label>
-									<div class='col-xs-7 col-sm-5 col-md-8'>
-									<input id='userNameInput' type='text' class='form-control' general_-_value' name='general_-_userNameInput' value='" . $userName . "'>
+						<div class='applicationContainer card generalContainer' style='cursor:default;'>
+                        <h3>General</h3>
+                        <div class='row justify-content-center'>
+	                        <div class='appDiv form-group'>
+	                            <label for='titleInput' class='col-xs-6 col-sm-4 col-lg-3 control-label left-label'>Main Title: </label>
+	                            <div class='appInput col-xs-6 col-sm-8 col-md-4 col-lg-8'>
+									<input id='titleInput' class='form-control form-control-sm settingInput' general_-_value' name='general_-_title' value='" . $title . "'>
+								</div>
+	                        </div>
+	                        <div class='appDiv form-group'>
+								<label for='branch'  class='col-xs-6 col-sm-4 col-lg-3 control-label left-label'>Git branch: </label>
+								<div class='appInput col-xs-6 col-sm-2 col-md-4 col-lg-6'>
+									<select id='branch' class='form-control form-control-sm settingInput' name='general_-_branch'>".
+										$branchList ."
+									</select>
+								</div>
+	                        </div>
+							<div class='appDiv form-group'>
+								<label for='theme' class='col-xs-6 col-sm-4 col-lg-3 control-label left-label'>Theme: </label>
+								<div class='appInput col-xs-6 col-sm-2 col-md-4 col-lg-7'>
+									<select id='theme' class='form-control form-control-sm general_-_value settingInput' name='general_-_theme'>".
+										listThemes() . "
+									</select>
 								</div>
 							</div>
-							<div class='userinput appDiv form-group'>
-								<label for='password' class='col-xs-4 control-label right-label'>Password: </label>
-								<div class='col-xs-7 col-sm-5 col-md-8'>
-									<input id='passwordInput' type='password' autocomplete='new-password' class='form-control' general_-_value' name='general_-_password' value='" . $passHash . "'>
+							<div class='appDiv form-group'>
+								<label for='general_-_color' class='control-label left-label col-xs-6 col-sm-4 col-lg-3'>Color:</label>
+								<div class='appInput col-xs-6 col-sm-8 col-md-4 col-lg-3'>
+									<input id='general_-_default' class='appsColor col-xs-6 col-sm-2 generalColor general_-_color settingInput' value='" .$themeColor."' name='general_-_color'>
+								</div>
+	                        </div>
+	                        </div>
+	                        <div class='row justify-content-center'>
+	                        	<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
+		                            <label for='updatepopupCheckbox' data-toggle='tooltip' data-placement='top' title='Enable this to receive notifications of updates to Muximux.' class='btn btn-primary btn-sm btn-block". ($updatePopup ? ' active' : '') ."'>
+										<input id='updatepopupCheckbox' name='general_-_updatepopup' type='checkbox'". ($updatePopup ? ' checked' : '') .">Update Alerts
+									</label>
+		                        </div>
+								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
+		                            <label for='splashscreenCheckbox' data-toggle='tooltip' data-placement='top' title='Show the splash screen when Muximux loads.' class='btn btn-primary btn-sm btn-block". ($splashScreen ? ' active' : '') ."'>
+										<input id='splashscreenCheckbox' class='settingInput' name='general_-_splashscreen' type='checkbox'".($splashScreen ? ' checked' : '') .">Splash Screen
+									</label>
+		                        </div>
+								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
+		                            <label for='mobileoverrideCheckbox' class='btn btn-primary btn-sm btn-block". ($mobileOverride ? ' active' : '') ."'>
+		                                <input id='mobileoverrideCheckbox class='settingInput' name='general_-_mobileoverride' type='checkbox'".($mobileOverride ? ' checked' : '').">Mobile Override
+									</label>
+		                        </div>
+		                        <div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
+		                            <label for='tabcolor' class='btn btn-primary btn-sm btn-block". ($tabColorEnabled ? ' active' : '') ."'>
+										<input id='tabcolor' class='settingInput' name='general_-_tabcolor' type='checkbox'" . ($tabColorEnabled ? ' checked' : '').">App Colors
+									</label>
+		                        </div>
+								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
+		                            <label for='autohide' class='btn btn-primary btn-sm btn-block". ($autoHide ? ' active' : '') ."'>
+										<input id='autohide' class='settingInput' name='general_-_autohide' type='checkbox'".($autoHide ? ' checked' : '').">Auto-hide Bar
+									</label>
+								</div>
+		                        <div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
+		                            <label for='authentication' class='btn btn-primary btn-sm btn-block". ($authentication ? ' active' : '') ."'>
+		                            	<input id='authentication' class='settingInput' name='general_-_authentication' type='checkbox'".($authentication ? ' checked' : '').">Authentication
+									</label>
+		                        </div>
+								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
+		                        	<label for='rss' class='btn btn-primary btn-sm btn-block". ($rss ? ' active' : '') ."'>
+		                        		<input id='rss' class='settingInput' name='general_-_rss' type='checkbox' ".($rss ? 'checked' : ''). ">Splash RSS
+									</label>
 								</div>
 							</div>
-						</div>
-                    </div>
+							<div class='row justify-content-center'>
+								<div class='userinput appDiv form-group rssUrlGroup". ($rss ? '' : ' hidden') ."'>
+									<label for='rssUrl' class='col-xs-4 control-label right-label'>Feed Url: </label>
+										<div class='col-xs-7 col-sm-5 col-md-3 col-lg-8'>
+										<input id='rssUrl' class='form-control settingInput' general_-_value' name='general_-_rssUrl' value='" . $rssUrl . "'>
+									</div>
+								</div>
+								<div class='inputdiv appDiv form-group". ($authentication ? '' : ' hidden') ."'>
+									<div class='userinput appDiv form-group'>
+										<label for='userNameInput' class='col-xs-4 control-label right-label'>Username: </label>
+											<div class='col-xs-7 col-sm-5 col-md-8'>
+											<input id='userNameInput' class='form-control settingInput' general_-_value' name='general_-_userNameInput' value='" . $userName . "'>
+										</div>
+									</div>
+									<div class='userinput appDiv form-group'>
+										<label for='password' class='col-xs-4 control-label right-label'>Password: </label>
+										<div class='col-xs-7 col-sm-5 col-md-8'>
+											<input id='password' type='password' autocomplete='new-password' class='form-control settingInput' general_-_value' name='general_-_password' value='" . $passHash . "'>
+										</div>
+									</div>
+								</div>
+							</div>
+	                    </div>
                 	
-					<input type='hidden' class='settings_-_value' name='settings_-_sha' value='".$mySha."'>
 					<input type='hidden' class='settings_-_value' name='settings_-_enabled' value='true'>
 					<input type='hidden' class='settings_-_value' name='settings_-_default' value='false'>
 					<input type='hidden' class='settings_-_value' name='settings_-_name' value='Settings'>
 					<input type='hidden' class='settings_-_value' name='settings_-_url' value='muximux.php'>
 					<input type='hidden' class='settings_-_value' name='settings_-_landingpage' value='false'>
-					<input type='hidden' class='settings_-_value' name='settings_-_icon' value='fa-cog'>
+					<input type='hidden' class='settings_-_value' name='settings_-_icon' value='muximux-cog'>
 					<input type='hidden' class='settings_-_value' name='settings_-_dd' value='true'>
 					<div id='sortable'>";
     foreach ($config as $section => $name) {
@@ -250,74 +253,72 @@ function parse_ini()
             $url = $config->get($section, 'url', 'http://www.plex.com');
             $color = $config->get($section, 'color', '#000');
             $icon = $config->get($section, 'icon', 'muximux-play');
-	    $icon = str_replace('fa-','muximux-',$icon);
-	    $scale = $config->get($section, 'scale', '1');
+	        $icon = str_replace('fa-','muximux-',$icon);
+	        $scale = $config->get($section, 'scale', 1) * 100;
             $default = $config->getBool($section, 'default', false);
             $enabled = $config->getBool($section, 'enabled', true);
             $landingpage = $config->getBool($section, 'landingpage', false);
             $dd = $config->getBool($section, 'dd', false);
-            $scaleRange = "0";
-            $scaleRange = buildScale($scale);
             $pageOutput .= "
-						<div class='applicationContainer' id='" . $section . "'>
-							<span class='bars fa fa-bars'></span>
+						<div class='applicationContainer card' id='" . $section . "'>
+							<span class='bars fa muximux-bars'></span>
+							<div class='row justify-content-center'>
 							<div class='appDiv form-group'>
-								<label for='" . $section . "_-_name' class='col-xs-4 col-md-4 control-label right-label'>Name: </label>
-								<div class='col-xs-7 col-md-8'>
-									<input class='form-control form-control-sm appName " . $section . "_-_value' was='" . $section . "' name='" . $section . "_-_name' type='text' value='" . $name . "'>
+									<label for='" . $section . "_-_url' class='col-xs-6 col-sm-4 control-label left-label'>Name: </label>
+									<div class='col-xs-6 col-sm-8 col-md-4 col-lg-8'>
+										<input class='form-control form-control-sm settingInput" . $section . "_-_value' name='" . $section . "_-_name' value='" . $section . "'>
+									</div>
 								</div>
-								
-							</div>
-							<div class='appDiv form-group'>
-								<label for='" . $section . "_-_url' class='col-xs-4 control-label right-label'>URL: </label>
-								<div class='col-xs-7 col-md-8'>
-									<input class='form-control form-control-sm " . $section . "_-_value' name='" . $section . "_-_url' type='text' value='" . $url . "'>
+								<div class='appDiv form-group'>
+									<label for='" . $section . "_-_url' class='col-xs-6 col-sm-4 control-label left-label'>URL: </label>
+									<div class='col-xs-6 col-sm-8 col-md-4 col-lg-8'>
+										<input class='form-control form-control-sm settingInput" . $section . "_-_value' name='" . $section . "_-_url' value='" . $url . "'>
+									</div>
+								</div>
+								<div  class='appDiv form-group'>
+									<label for='" . $section . "_-_scale' class='col-xs-6 col-sm-4 control-label col-form-label left-label'>Zoom: </label>
+									<div class='slider-outer col-xs-6 col-md-4 col-lg-3'>
+										<div class='slider'>
+											<div class='ui-slider-handle custom-handle' value='".$scale."'></div>
+										</div>
+									</div>
+								</div>
+								<div class='appDiv form-group'>
+									<label for='" . $section . "_-_icon' class='col-xs-6 col-sm-4 control-label left-label'>Icon: </label>
+									<input data-bv-notempty='true' class='iconpicker settingInput' data-bv-notempty-message='You must pick a font' type='text' name='" . $section . "_-_icon' id='fip_1' value='".$icon."' />
+								</div>
+								<div class='appDiv form-group colorDiv'>
+									<label for='" . $section . "_-_color' class='col-xs-6 col-sm-4 col-lg-3 control-label color-label left-label'>Color:</label>
+									<div class='appInput col-xs-6 col-sm-8 col-md-4 col-lg-3'>
+										<input id='" . $section . "_-_color' class='form-control form-control-sm appsColor settingInput" . $section . "_-_color' value='" . $color . "' name='" . $section . "_-_color'>
+									</div>
 								</div>
 							</div>
-							<div  class='appDiv form-group'>
-								<label for='" . $section . "_-_scale' class='col-xs-4 col-md-5 control-label col-form-label right-label'>Zoom: </label>
-								<div class='col-xs-7 col-md-5'>
-									<select id='" . $section . "_-_scale' class='form-control custom-select form-control-sm ' name='" . $section . "_-_scale'>". $scaleRange ."</select>
+							<div class='row justify-content-center'>
+								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
+		                        	<label for='" . $section . "_-_enabled' class='btn btn-primary btn-sm btn-block ".($enabled ? 'active' : ''). "'>
+										<input type='checkbox' class='settingInput' id='" . $section . "_-_enabled' name='" . $section . "_-_enabled'".($enabled ? ' checked' : '') .">Enabled
+									</label>
+								</div>
+								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
+		                        	<label for='" . $section . "_-_landingpage' class='btn btn-primary btn-sm btn-block ".($landingpage ? 'active' : ''). "'>Splash Item
+										<input type='checkbox' class='settingInput' id='" . $section . "_-_landingpage' name='" . $section . "_-_landingpage'".($landingpage ? ' checked' : '') .">
+									</label>
+								</div>
+								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
+		                        	<label for='" . $section . "_-_dd' class='btn btn-primary btn-sm btn-block".($dd ? 'active' : ''). "'>
+										<input type='checkbox' class='settingInput' id='" . $section . "_-_dd' name='" . $section . "_-_dd'".($dd ? ' checked' : '') .">Dropdown
+									</label>
+								</div>
+								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
+									<label class='btn btn-primary btn-sm".($default ? ' active' : ''). "' for='" . $section . "_-_default' >
+										<input type='radio' class='settingInput' name='" . $section . "_-_default' id='" . $section . "_-_default' autocomplete='off' ".($default ? ' checked' : '') .">Default
+									</label>
 								</div>
 							</div>
-							<div class='appDiv form-group'>
-								<label for='" . $section . "_-_icon' class='col-xs-4 control-label right-label'>Icon: </label>
-								<div class='col-xs-7 col-md-5'>
-									<button role='iconpicker' class='form-control form-control-sm iconpicker btn btn-default' name='" . $section . "_-_icon' data-rows='4' data-cols='6' data-search='true' data-search-text='Search...' data-iconset='muximux' data-placement='left' data-icon='" . $icon . "'></button>
-								</div>	
+							<div class='row justify-content-center'>
+								<button type='button' class='btn btn-danger btn-sm col-xs-6 col-md-2' value='Remove' id='remove-" . $section . "'>Remove</button>
 							</div>
-							<div class='appDiv form-group colorDiv'>
-								<label for='" . $section . "_-_color' class='col-xs-4 col-md-5 control-label color-label right-label'>Color: </label>
-								<div class='col-xs-7'>
-									<input type='text' id='" . $section . "_-_color' class='form-control form-control-sm appsColor " . $section . "_-_color' value='" . $color . "' name='" . $section . "_-_color'>
-								</div>
-							</div>
-							<div class='hidden-xl-up'>
-								<br>
-							</div>
-							<div class='appDiv form-group'>
-								<label for='" . $section . "_-_enabled' class='col-xs-6 col-md-12 control-label col-form-label form-check-inline'>Enabled:
-									<input type='checkbox' class='form-check-input form-control " . $section . "_-_value' id='" . $section . "_-_enabled' name='" . $section . "_-_enabled'".($enabled ? 'checked' : '') .">
-								</label>
-							</div>
-							<div class='appDiv form-group'>
-								<label for='" . $section . "_-_landingpage' class='col-xs-6 col-md-12 control-label col-form-label form-check-inline'>Landing:
-									<input type='checkbox' class='form-check-input form-control " . $section . "_-_value' id='" . $section . "_-_landingpage' name='" . $section . "_-_landingpage'".($landingpage ? 'checked' : '') .">
-								</label>
-							</div>
-							<div class='appDiv form-group'>
-								<label for='" . $section . "_-_dd' class='col-xs-6 col-md-12 control-label col-form-label form-check-inline'>Dropdown:
-									<input type='checkbox' class='form-check-input form-control " . $section . "_-_value' id='" . $section . "_-_dd' name='" . $section . "_-_dd'".($dd ? 'checked' : '') .">
-								</label>
-							</div>
-							<div class='appDiv form-group'>
-								<label for='" . $section . "_-_default' class='col-xs-6 col-md-12 control-label col-form-label form-check-inline'>Default:
-									<input type='radio' class='form-check-input form-control " . $section . "_-_value' id='" . $section . "_-_default' name='" . $section . "_-_default'".($default ? 'checked' : '') .">
-								</label>
-							</div>
-
-								<button type='button' class='form-control form-control-sm removeButton btn btn-danger btn-xs' value='Remove' id='remove-" . $section . "'>Remove</button>
-							
 						</div>";
         }
     }
@@ -325,8 +326,8 @@ function parse_ini()
                 </div>
                 <div class='text-center' style='margin-top: 15px;'>
                     <div class='btn-group' role='group' aria-label='Buttons'>
-                        <a class='btn btn-primary btn-md' id='addApplication'><span class='fa fa-plus'></span> Add new</a>
-                        <a class='btn btn-danger btn-md' id='removeAll'><span class='fa fa-trash'></span> Remove all</a>
+                        <a class='btn btn-primary btn-sm btn-block btn-md' id='addApplication'><span class='fa muximux-plus'></span> Add new</a>
+                        <a class='btn btn-danger btn-md' id='removeAll'><span class='fa muximux-trash'></span> Remove all</a>
                     </div>
                 </div>
             </form>";
@@ -347,14 +348,14 @@ function splashScreen() {
 	$enabled = $config->getBool($keyname,'enabled',false);
 	if (($keyname != "general") && ($keyname != "settings") && $enabled) {
     	$color = ($tabColor===true ? $section["color"] : $themeColor);
-	$icon = $config->get($keyname,'icon','fa-play');
-	$icon = str_replace('fa-','muximux-',$icon);
+		$icon = $config->get($keyname,'icon','muximux-play');
+		$icon = str_replace('fa-','muximux-',$icon);
 			
 			$splash .= "
 									<div class='btnWrap'>
-										<div class='well splashBtn' data-content='" . $keyname . "'>
+										<div class='card card-inverse splashBtn' data-content='" . $keyname . "'>
 											<a class='panel-heading' data-title='" . $section["name"] . "'>
-												<br><i class='fa fa-5x " . $icon . "' style='color:".$color."'></i><br>
+												<br><i class='fa fa-3x " . $icon . "' style='color:".$color."'></i><br>
 												<p class='splashBtnTitle' style='color:#ddd'>".$section["name"]."</p>
 											</a>
 										</div>
@@ -375,44 +376,34 @@ function log_contents() {
 	$lineOut = "";
 	$concat = false;
 	foreach($file as $line){
-		$lvl = substr($line,0,2);
-		if (substr($lvl,1,1) == "/") {
-			switch ($lvl) {
-				case "E/":
-					$color = 'alert alert-danger';
-					break;
-				case "D/":
-					$color = 'alert alert-warning';
-					break;
-				case "I/":
-					$color = 'alert alert-success';
-					break;
-				case "":
-					$color = 'alert alert-info';
-					break;
-			}
-			if ($concat === true) {
-			$out .='
-                        <li class="logLine alert alert-info">'.
-                            $lineOut.'
-                        </li>';
-			}
-
-		
-		
-			$lineOut = substr($line,2);
-			$concat = false;
-		
-		} else {
-			$lineOut .= $line;
-			$concat = true;
+		$color = 'alert alert-info';
+		$lvl = preg_match("/\[[^\]]*\]/", $line)[0];
+		switch ($lvl) {
+			case "ERROR":
+				$color = 'alert alert-danger';
+				break;
+			case "DEBUG":
+				$color = 'alert alert-warning';
+				break;
+			case "INFO":
+				$color = 'alert alert-success';
+				break;
 		}
-		if ($concat === false) {
-			$out .='
-                        <li class="logLine '.$color.'">'.
-                            $lineOut.'
-                        </li>';
 
+		if ($concat) {
+			$out .='
+                    <li class="logLine alert alert-info">'.
+                        $lineOut.'
+                    </li>';
+		}
+		$concat = false;
+		
+
+		if (! $concat) {
+			$out .='
+                    <li class="logLine '.$color.'">'.
+                        $lineOut.'
+                    </li>';
 		}
         
     }
@@ -435,19 +426,19 @@ function checkBranchChanged() {
     }
 }
 
-// Build a custom scale using our set value, show it as selected
-function buildScale($selectValue)
-{
-    $f=10;
-    $scaleRange = "";
-    while($f<251) {
-        $pra = $f / 100;
-        $scaleRange .= "
-                                <option value='" . $pra ."' ".(($pra == $selectValue ? 'selected' : '')).">". $f ."%</option>";
-        $f++;
-
-    }
-    return $scaleRange;
+function appColors() {
+	$config = new Config_Lite(CONFIG);
+	$vars = $config;
+	if (isset($vars['general'])) unset($vars['general']);
+	if (isset($vars['settings'])) unset($vars['settings']);
+	write_log("Vars: ".json_encode($vars));
+	$tabColors = $config->getBool("general","tabcolor",true);
+	$themeColor = $config->get("general","color","#31ac63");
+	$colors = [];
+	foreach ($vars as $title => $settings) {
+		$colors[strtolower($title)] = $tabColors ? $settings['color'] : $themeColor;
+	}
+	return $colors;
 }
 
 // Quickie to get the theme from settings
@@ -463,23 +454,19 @@ function getThemeFile() {
     $item = $config->get('general', 'theme', 'classic');
 	if (file_exists('css/theme/'.$item.'.css')) {
 		return 'css/theme/'.$item.'.css';
-		die;
 	} else {
 		$item=strtolower($item);
 	}
 	if (file_exists('css/theme/'.$item.'.css')) {
 		return 'css/theme/'.$item.'.css';
-		die;
 	} else {
 		$item=ucfirst($item);
 	}
 	if (file_exists('css/theme/'.$item.'.css')) {
 		return 'css/theme/'.$item.'.css';
-		die;
 	} else {
 		$item='theme_default.css';
 		return 'css/'.$item.'.css';
-		die;
 	}	
 }
 
@@ -488,7 +475,6 @@ function listThemes() {
     $dir    = './css/theme';
     $themelist ="";
     $themes = scandir($dir);
-    $themeCurrent = getTheme();
     foreach($themes as $value){
         $splitName = explode('.', $value);
 		if  (!empty($splitName[0])) {
@@ -508,12 +494,12 @@ function menuItems() {
     $dropdownmenu = "
 							<li>
 								<a data-toggle='modal' data-target='#settingsModal' data-title='Settings'>
-									<span class='fa fa-cog'></span>Settings
+									<span class='fa muximux-cog'></span>Settings
 								</a>
 							</li>
 							<li>
 								<a id='logModalBtn' data-toggle='modal' data-target='#logModal' data-title='Log Viewer'>
-									<span class='fa fa-file-text-o'></span> Log
+									<span class='fa muximux-file-text-o'></span> Log
 								</a>
 							</li>";
     $int = 0;
@@ -521,18 +507,15 @@ function menuItems() {
 	$dropdown = $config->getBool('general', 'enabledropdown', true);
 	$mobileoverride = $config->getBool('general', 'mobileoverride', false);
 	$authentication = $config->getBool('general', 'authentication', false);
-    
+    $drawerdiv = '';
 	foreach ($config as $keyname => $section) {
         if (($keyname != "general") && ($keyname != "settings")) {
             $name = $config->get($keyname, 'name', '');
-            $url = $config->get($keyname, 'url', 'http://www.plex.com');
             $color = $config->get($keyname, 'color', '#000');
-            $icon = $config->get($keyname, 'icon', 'fa-play');
+            $icon = $config->get($keyname, 'icon', 'muximux-play');
 		    $icon = str_replace('fa-','muximux-',$icon);
-		    $scale = $config->get($keyname, 'scale', '1');
-            $default = $config->getBool($keyname, 'default', false);
+		    $default = $config->getBool($keyname, 'default', false);
             $enabled = $config->getBool($keyname, 'enabled', false);
-            $landingpage = $config->getBool($keyname, 'landingpage', false);
             $dd = $config->getBool($keyname, 'dd', false);
 			        
 			if ($enabled) {
@@ -540,16 +523,16 @@ function menuItems() {
 					if (!$dd) {
 						$standardmenu .= "
 							<li class='cd-tab' data-index='".$int."'>
-								<a data-content='" . $keyname . "' data-title='" . $section["name"] . "' data-color='" . $section["color"] . "' class='".($default ? 'selected' : '')."'>
-									<span class='fa " . $icon . " fa-lg'></span> " . $section["name"] . "
+								<a data-content='" . $keyname . "' data-title='" . $name . "' data-color='" . $color . "' class='".($default ? 'selected' : '')."'>
+									<span class='fa " . $icon . " fa-lg'></span> " . $name . "
 								</a>
 							</li>";
 						$int++;
 					} else {
 						$dropdownmenu .= "
 							<li>
-								<a data-content='" . $keyname . "' data-title='" . $section["name"] . "'>
-									<span class='fa " . $icon . "'></span> " . $section["name"] . "
+								<a data-content='" . $keyname . "' data-color='" . $color . "' data-title='" . $name . "'>
+									<span class='fa " . $icon . "'></span> " . $name . "
 								</a>
 							</li>";
 					}
@@ -569,11 +552,10 @@ function menuItems() {
                     </a>
                 </li>
                 <li class='navbtn ".(($splashScreen == "true") ? '' : 'hidden')."'>
-			<a id='showSplash' data-toggle='modal' data-target='#splashModal' data-title='Show Splash'>
-                	<span class='fa muximux-home4 fa-lg'></span>
+					<a id='showSplash' data-toggle='modal' data-target='#splashModal' data-title='Show Splash'>
+                		<span class='fa muximux-home4 fa-lg'></span>
                     </a>
                 </li>
-    
                 <li class='navbtn ".(($authentication == "true") ? '' : 'hidden')."'>
                     <a id='logout' title='Click this button to log out of Muximux.'>
                         <span class='fa muximux-sign-out fa-lg'></span>
@@ -597,7 +579,7 @@ function menuItems() {
             $moButton ."
                 <li class='dd navbtn'>
                     <a id='hamburger'>
-                        <span class='fa fa-bars fa-lg'></span>
+                        <span class='fa muximux-bars fa-lg'></span>
                     </a>
                     <ul class='drop-nav'>" .
                                 $dropdownmenu ."
@@ -611,7 +593,7 @@ function menuItems() {
     } else {
         $item =  
 			$drawerdiv . 
-            		$moButton .
+			$moButton .
 			$standardmenu;
     }
     return $item;
@@ -669,7 +651,6 @@ function fetchBranches($skip) {
             $result = false;
         } else {
             $array = json_decode($json,true);
-            $i = 0;
             $names = array();
             $shas = array();
             foreach ($array as $value) {
@@ -679,7 +660,6 @@ function fetchBranches($skip) {
                     } else {
                         foreach ($value2 as $key2 => $value3) {
                             if ($key2 == "sha" ) {
-                                $shaVal = $value3;
                                 array_push($shas,$value3);
                             }
                         }
@@ -711,15 +691,16 @@ function console_log( $data ) {
 // This checks whether we have a SHA, and if not, whether we are using git or zip updates and stores
 // the data accordingly
 function checksetSHA() {
-    $config = new Config_Lite(CONFIG);
-	$shaIn = $config->get('settings','sha','0');
+	$config = new Config_Lite('settings.ini.php');
+	$shaOut = $branchOut = $git = false;
+    $shaIn = $config->get('settings','sha',false);
 	$branchIn = getBranch();
 	$git = can_git();
-	if ($git !== false) {
+	if ($git) {
 		$shaOut = exec('git rev-parse HEAD');
 		$branchOut = exec('git rev-parse --abbrev-ref HEAD');
 	} else {
-		if (shaIn == '0') {
+		if (! $shaIn) {
 			$branchArray = getBranches();
 			$branchOut = $branchIn();
 			foreach ($branchArray as $branchName => $shaVal) {
@@ -761,53 +742,27 @@ function getPassHash() {
 // This little gem helps us replace a whome bunch of AJAX calls by sorting out the info and
 // writing it to meta-tags at the bottom of the page.  Might want to look at calling this via one AJAX call.
 function metaTags() {
+	$inipath = false;
     $config = new Config_Lite(CONFIG);
-    $standardmenu = "";
-    $dropdownmenu = "";
-    $authentication = ($config->getBool('general', 'authentication', false) ? 'true' : 'false');
-    $autohide = ($config->getBool('general', 'autohide', false) ? 'true' : 'false');
-    $branch = $config->get('general', 'branch', 'master');
-    $branchUrl = "https://api.github.com/repos/mescon/Muximux/commits?sha=" . $branch;
-    $popupdate = ($config->getBool('general', 'updatepopup', false) ? 'true' : 'false');
-    $enabledropdown = ($config->getBool('settings', 'enabledropdown', true) ? 'true' : 'false');
-    $maintitle = $config->get('general', 'title', 'Muximux');
-    $tabcolor = ($config->getBool('general', 'tabcolor', false) ? 'true' : 'false');
-    $splashScreen = ($config->getBool('general', 'splashscreen', false) ? 'true' : 'false');
-    $css = getThemeFile();
-    $cssColor = ((parseCSS($css,'.colorgrab','color') != false) ? parseCSS($css,'.colorgrab','color') : '#FFFFFF');
-    $themeColor = $config->get('general','color',$cssColor);
-    $rss = ($config->getBool('general', 'rss', false) ? 'true' : 'false');
-    $rssUrl = $config->get('general','rssUrl','https://trace.corrupt-net.org/live.php');
-    $inipath = php_ini_loaded_file();
-        if ($inipath) {
-            $inipath;
-        } else {
+    $iniPath = php_ini_loaded_file();
+        if (! $inipath) {
             $inipath = "php.ini";
         }
     $created = filectime(CONFIG);
 	$branchChanged = (checkBranchChanged() ? 'true' : 'false');
-    $secret = file_get_contents(SECRET);
-$tags = "
-    <meta id='dropdown-data' data='".$enabledropdown."'>
-    <meta id='branch-data' data='". $branch . "'>
-    <meta id='branch-changed' data='". $branchChanged . "'>
-    <meta id='popupdate' data='". $popupdate . "'>
-    <meta id='drawer' data='". $autohide . "'>
-    <meta id='tabcolor' data='". $tabcolor . "'>
-    <meta id='maintitle' data='". $maintitle . "'>
-    <meta id='gitdirectory-data' data='". $gitdir . "'>
-    <meta id='cwd-data' data='". getcwd() . "'>
-    <meta id='phpini-data' data='". $inipath . "'>
-    <meta id='title-data' data='". $maintitle . "'>
-    <meta id='created-data' data='". $created . "'>
-    <meta id='sha-data' data='". getSHA() . "'>
-    <meta id='secret' data='". $secret . "'>
-    <meta id='themeColor-data' data='". $themeColor . "'>
-    <meta id='splashScreen-data' data='". $splashScreen . "'>
-    <meta id='authentication-data' data='". $authentication . "'>
-    <meta id='rss-data' data='". $rss . "'>
-    <meta id='rssUrl-data' data='". $rssUrl . "'>
-";
+	$tags = "";
+
+	$general = $config->get('general');
+	$general['cwd'] = getcwd();
+	$general['sha'] = getSHA();
+	$general['phpini'] = $iniPath;
+	$general['created'] = $created;
+	foreach ($general as $id=>$value) {
+		$id .= "-data";
+		if (is_bool($value)) $value = boolval($value);
+		$tags .= '<meta id="'.$id.'" data='.$value.' class="metatag">'.PHP_EOL;
+	}
+
     return $tags;
 }
 
@@ -821,16 +776,45 @@ function frameContent() {
     $default = $config->getBool($keyname,'default',false);
     $scale = $config->get($keyname,'scale',1);
     $url = $section["url"];
-    $url=($landingpage ? "?landing=" . $keyname: $url);
+    $urlArray = parse_url($url);
+	if (!$urlArray) {
+		$protocol = preg_match("/http/",explode("://",$url)[0]) ? explode("://",$url)[0] . "://" : serverProtocol();
+		$url = str_replace($protocol,"",$url);
+		$port = explode(":",$url)[1] ? ":".explode(":",$url)[1] : "";
+		$url = str_replace($port,"",$url);
+		$host = $url ? $url : $_SERVER['HTTP_HOST'];
+		$url = $protocol.$host.$port;
+		$urlArray = parse_url($url);
+	}
+    // TODO: Make sure this still works
+    if ($landingpage) $urlArray['query'] = isset($urlArray['query']) ? $urlArray['query']."&" : ""."landing=" . urlencode($keyname.":".$url);
+    $url = $urlArray ? build_url($urlArray) : $url;
     if ($enabled && ($keyname != 'settings') && ($keyname != 'general')) {
 		$item .= "
-				<li data-content='" . $keyname . "' data-scale='" . $section["scale"] ."' ".($default ? "class='selected'" : '').">
+				<li data-content='" . $keyname . "' data-scale='" . $scale ."' ".($default ? "class='selected'" : '').">
 					<iframe sandbox='allow-forms allow-same-origin allow-pointer-lock allow-scripts allow-popups allow-modals allow-top-navigation'
 					allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true' scrolling='auto' data-title='" . $section["name"] . "' ".($default ? 'src' : 'data-src')."='" . $url . "'></iframe>
 				</li>";
         }
     }
     return $item;
+}
+
+function serverProtocol() {
+	return (((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')	|| $_SERVER['SERVER_PORT'] == 443) ? 'https://' : 'http://');
+}
+
+function build_url($parsed_url) {
+	$scheme   = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : serverProtocol();
+	$host     = isset($parsed_url['host']) ? $parsed_url['host'] : "";
+	$port     = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
+	$user     = isset($parsed_url['user']) ? $parsed_url['user'] : '';
+	$pass     = isset($parsed_url['pass']) ? ':' . $parsed_url['pass']  : '';
+	$pass     = ($user || $pass) ? "$pass@" : '';
+	$path     = isset($parsed_url['path']) ? $parsed_url['path'] : '';
+	$query    = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
+	$fragment = isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : '';
+	return "$scheme$user$pass$host$port$path$query$fragment";
 }
 // Build a landing page.
 function landingPage($keyname) {
@@ -886,21 +870,16 @@ if (isset($_GET['landing'])) {
     die();
 }
 
-// This is where the JavaScript reads the contents of the secret file. This gets re-generated on each page load.
-if (isset($_GET['get']) && $_GET['get'] == 'secret') {
-        $secret = file_get_contents(SECRET) or die("Unable to open " . SECRET);
-        echo $secret;
-        die();
-}
-// Things wrapped inside this are protected by a secret hash.
-if(isset($_GET['secret']) && $_GET['secret'] == file_get_contents(SECRET)) {
-    // This lets us create a new secret when we leave the page.
-    if (isset($_GET['set']) && $_GET['set'] == 'secret') {
-            createSecret();
-            die();
-    }
 
-    if (isset($_GET['get']) && $_GET['get'] == 'hash') {
+// Things wrapped inside this are protected by a secret hash.
+if (isset($_GET['secret'])) {
+	if ($_GET['secret'] !== $_SESSION['secret']) {
+		write_log("Invalid secret sent, dying.","ERROR");
+		die();
+	}
+	write_log("We have a secret request!");
+
+	if (isset($_GET['get']) && $_GET['get'] == 'hash') {
         if (exec_enabled() == true) {
 		$git = can_git();
             if ($git !== false) {
@@ -913,6 +892,28 @@ if(isset($_GET['secret']) && $_GET['secret'] == file_get_contents(SECRET)) {
         }
         echo $hash;
         die();
+    }
+
+    if (isset($_GET['colors'])) {
+    	write_log("Got a request for colors.");
+    	echo json_encode(appColors());
+    	die;
+    }
+
+    if (isset($_GET['id']) && isset($_GET['value'])) {
+		$key = $_GET['id'];
+		$value = $_GET['value'];
+	    $section = 'general';
+    	if (preg_match("/_-_/",$key)) {
+    		$sections = explode("_-_",$key);
+    		$section = $sections[0];
+    		$key = $sections[1];
+	    }
+	    if ($key == 'scale') $value = $value/100;
+	    write_log("Updating value for $key : $value in $section","INFO");
+    	$config->set($section,$key,$value);
+    	saveConfig($config);
+    	die();
     }
 
     if(isset($_GET['remove']) && $_GET['remove'] == "backup") {
@@ -957,11 +958,6 @@ if(isset($_GET['secret']) && $_GET['secret'] == file_get_contents(SECRET)) {
         }
         die();
     }
-}
-
-// End protected get-calls
-if(empty($_GET)) {
-    createSecret();
 }
 
 // This downloads updates from git if available and able, otherwise, from zip.
@@ -1114,6 +1110,91 @@ function is_session_started() {
     return FALSE;
 }
 
+/**
+ * Generate HTML SELECT OPTION along with OPTGROUP
+ *
+ * You will need to provide the SELECT element yourself as this only generates the optgroup and option elements
+ *
+ * @param  array  $icomoon_icons The original variable generated by this script
+ * @param  string $by            What to print the value by. Possibilities are class, unicode, hex|hexadecimal or key
+ * @return string                The optgroup and option for you to echo
+ */
+function imii_generate_select_options( $icomoon_icons, $by = 'class' ) {
+	$return = '';
+	$by = strtolower( $by );
+	foreach ( $icomoon_icons as $icons ) {
+		$return .= '<optgroup label="' . htmlspecialchars( $icons['label'] ) . '">';
+		if ( isset( $icons['elements'] ) ) {
+			foreach ( $icons['elements'] as $ic_key => $ic_name ) {
+				$val = $ic_key;
+				if ( $by == 'class' ) {
+					$val = htmlspecialchars( $icons['element_classes'][$ic_key] );
+				} else if ( $by == 'unicode' ) {
+					$val = '&#x' . dechex( $ic_key ) . ';';
+				} else if ( $by == 'hex' || $by == 'hexadecimal' ) {
+					$val = dechex( $ic_key );
+				}
+				$return .= '<option value="' . $val . '">' . $ic_name . '</option>';
+			}
+		}
+		$return .= '</optgroup>';
+	}
+	return $return;
+}
+
+/**
+ * Generate the JSON variable for the <code>source</code> option for fontIconPicker
+ *
+ * You will need to assign it to a variable inside JavaScript code
+ * @link https://github.com/micc83/fontIconPicker fontIconPicker Project Page
+ *
+ * @param  array  $icomoon_icons The original variable generated by this script
+ * @param  string $by            What to print the value by. Possibilities are class or key
+ * @return string                The JSON which can be assigned to a variable. See example
+ */
+function imii_generate_fip_source_json( $icomoon_icons, $by = 'class' ) {
+	$json = array();
+	$by = strtolower( $by );
+	foreach ( $icomoon_icons as $icons ) {
+		$icon_set = array();
+		if ( isset( $icons['elements'] ) ) {
+			foreach ( $icons['elements'] as $ic_key => $ic_name ) {
+				$val = $ic_key;
+				if ( $by == 'class' ) {
+					$val = htmlspecialchars( $icons['element_classes'][$ic_key] );
+				}
+				$icon_set[] = $val;
+			}
+		}
+		$json[$icons['label']] = $icon_set;
+	}
+	return json_encode( $json );
+}
+
+/**
+ * Generate the JSON variable for the <code>searchSource</code> option for fontIconPicker
+ *
+ * You will need to assign it to a variable inside JavaScript code
+ * @link https://github.com/micc83/fontIconPicker fontIconPicker Project Page
+ *
+ * @param  array  $icomoon_icons The original variable generated by this script
+ * @return string                The JSON which can be assigned to a variable. See example
+ */
+function imii_generate_fip_search_json( $icomoon_icons ) {
+	$json = array();
+	foreach ( $icomoon_icons as $icons ) {
+		$icon_set = array();
+		if ( isset( $icons['elements'] ) ) {
+			foreach ( $icons['elements'] as $ic_key => $ic_name ) {
+				$icon_set[] = $ic_name;
+			}
+		}
+		$json[$icons['label']] = $icon_set;
+	}
+	return json_encode( $json );
+}
+
+
 // This might be excessive for just grabbing one theme value from CSS,
 // but if we ever wanted to make a full theme editor, it could be handy.
 
@@ -1173,50 +1254,75 @@ function mapIcons($file,$classSelector){
 // Appends lines to file and makes sure the file doesn't grow too much
 // You can supply a level, which should be a one-letter code (E for error, D for debug, I for information)
 // If a level is not supplied, it will be assumed to be Informative.
-
-function write_log($text,$level=null) {
-    if ($level === null) {
-        $level = 'I';	
-    }
-    $filename = 'muximux.log';
-    $text = $level .'/'. date(DATE_RFC2822) . ': ' . htmlspecialchars($text) . PHP_EOL;
-    if (!file_exists($filename)) { touch($filename); chmod($filename, 0666); }
-    if (filesize($filename) > 2*1024*1024) {
-        $filename2 = "$filename.old";
-        if (file_exists($filename2)) unlink($filename2);
-        rename($filename, $filename2);
-        touch($filename); chmod($filename,0666);
-    }
-    if (!is_writable($filename)) die("<p>\nCannot open log file ($filename)");
-    if (!$handle = fopen($filename, 'a')) die("<p>\nCannot open file ($filename)");
-    if (fwrite($handle, $text) === FALSE) die("<p>\nCannot write to file ($filename)");
-    fclose($handle);
+function write_log($text,$level=null,$caller=false) {
+	if ($level === null) {
+		$level = 'DEBUG';
+	}
+	if (isset($_GET['pollPlayer'])) return;
+	$caller = $caller ? $caller : getCaller();
+	$filename = 'muximux.log';
+	$text = '['.date(DATE_RFC2822) . '] ['.$level.'] ['.$caller . "] - " . trim($text) . PHP_EOL;
+	if (!file_exists($filename)) { touch($filename); chmod($filename, 0666); }
+	if (filesize($filename) > 2*1024*1024) {
+		$filename2 = "$filename.old";
+		if (file_exists($filename2)) unlink($filename2);
+		rename($filename, $filename2);
+		touch($filename); chmod($filename,0666);
+	}
+	if (!is_writable($filename)) die;
+	if (!$handle = fopen($filename, 'a+')) die;
+	if (fwrite($handle, $text) === FALSE) die;
+	fclose($handle);
 }
 
-// Try to save our config and rewrite the header
-function saveConfig($inConfig) {
-    try {
-        $inConfig->save();
-    } catch (Config_Lite_Exception $e) {
-        echo "\n" . 'Exception Message: ' . $e->getMessage();
-    write_log('Error saving configuration.','E');
-    }
-    $cache_new = "; <?php die('Access denied'); ?>"; // Adds this to the top of the config so that PHP kills the execution if someone tries to request the config-file remotely.
-    $file = CONFIG; // the file to which $cache_new gets prepended
-    $handle = openFile($file, "r+");
-    $len = strlen($cache_new);
-    $final_len = filesize($file) + $len;
-    $cache_old = fread($handle, $len);
-    rewind($handle);
-    $i = 1;
-    while (ftell($handle) < $final_len) {
-        fwrite($handle, $cache_new);
-        $cache_new = $cache_old;
-        $cache_old = fread($handle, $len);
-        fseek($handle, $i * $len);
-        $i++;
-    }
+// Get the name of the function calling write_log
+function getCaller() {
+	$trace = debug_backtrace();
+	$useNext = false;
+	$caller = false;
+	//write_log("TRACE: ".print_r($trace,true),null,true);
+	foreach ($trace as $event) {
+		if ($useNext) {
+			if (($event['function'] != 'require') && ($event['function'] != 'include')) {
+				$caller .= "::" . $event['function'];
+				break;
+			}
+		}
+		if ($event['function'] == 'write_log') {
+			$useNext = true;
+			// Set our caller as the calling file until we get a function
+			$file = pathinfo($event['file']);
+			$caller = $file['filename'] . "." . $file['extension'];
+		}
+	}
+	return $caller;
 }
+
+// Coalesce hack
+function c() {
+	$args = func_get_args();
+	foreach ($args as $arg) {
+		if (!empty($arg)) {
+			return $arg;
+		}
+	}
+	return NULL;
+}
+
+
+function saveConfig(Config_Lite $inConfig) {
+	try {
+		$inConfig->save();
+	} catch (Config_Lite_Exception $e) {
+		echo "\n" . 'Exception Message: ' . $e->getMessage();
+		write_log('Error saving configuration.','ERROR');
+	}
+	$configFile = dirname(__FILE__)."/settings.ini.php";
+	$cache_new = "'; <?php die('Access denied'); ?>"; // Adds this to the top of the config so that PHP kills the execution if someone tries to request the config-file remotely.
+	$cache_new .= file_get_contents($configFile);
+	file_put_contents($configFile,$cache_new);
+}
+
 
 // Echo a message to the user
 function setStatus($message) {

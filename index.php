@@ -1,6 +1,12 @@
 <?php
-error_reporting (E_ALL ^ E_NOTICE); /* Turn off notice errors */
+ini_set("log_errors", 1);
+ini_set('max_execution_time', 300);
+error_reporting(E_ERROR);
+$errorLogPath = "muximux.log";
+ini_set("error_log", $errorLogPath);
+date_default_timezone_set((date_default_timezone_get() ? date_default_timezone_get() : "America/Chicago"));
 require 'muximux.php';
+require_once 'iconindex.php';
 if (is_session_started()) session_destroy();
 session_start();
 defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
@@ -41,10 +47,21 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
     <meta name="application-name" content="Muximux">
     <meta name="msapplication-config" content="images/favicon/browserconfig.xml?v=ngGoyLXN9n">
     <meta name="theme-color" content="#ffffff">
-    <link rel="stylesheet" href="css/loader.css"/>
-    <link rel="stylesheet" href="combineify.php?type=css&files=css/cssreset.min.css,css/jquery-ui.min.css,css/bootstrap.min.css,css/bootstrap-iconpicker.min.css,css/font-awesome.min.css,css/font-muximux.css,css/font-pt_sans.css,css/style.css,css/spectrum.min.css,<?php echo getThemeFile();?>">
-    <title><?php echo getTitle(); ?></title>
+    <link rel="stylesheet" href="css/cssreset.min.css"/>
+    <link rel="stylesheet" href="css/jquery-ui.min.css"/>
+    <link rel="stylesheet" href="css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="css/font-muximux.css"/>
+    <link rel="stylesheet" href="css/font-pt_sans.css"/>
+    <link rel="stylesheet" href="css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="css/bootstrap-grid.min.css"/>
+    <link rel="stylesheet" href="css/bootstrap-iconpicker.min.css"/>
+    <link rel="stylesheet" href="css/muximux.css"/>
+    <link rel="stylesheet" href="<?php echo getThemeFile();?>">
+    <link rel="stylesheet" href="css/spectrum.min.css"/>
+    <link rel="stylesheet" href="css/jquery.fonticonpicker.min.css">
+    <link rel="stylesheet" href="css/jquery.fonticonpicker.bootstrap.min.css">
 
+    <title><?php echo getTitle(); ?></title>
 </head>
 
 <body>
@@ -56,7 +73,7 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
         </div>
     </div>
     <div class="loader-header">
-        <h4>Muximux is loading...</h4>
+        <h5>Muximux is loading...</h5>
     </div>
     <div class="loader-body">
         <div class="loader">
@@ -80,7 +97,7 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
     </div>
 
     <!-- Modal -->
-    <div id="settingsModal" class="modal fade keyModal" role="dialog">
+    <div id="settingsModal" class="modal keyModal" role="dialog">
         <div class="modal-dialog">
             <!-- Modal content-->
             <div class="modal-content">
@@ -95,13 +112,12 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
                         <h1>Settings</h1>
                     </div>
                 </div>
-                <div class="modal-body">
-                    <div class="text-center">
+                <div class="modal-body text-center">
+
                         <div class="btn-group" role="group" aria-label="Buttons" id="topButtons">
-                            <a class="btn btn-primary" id="showInstructions"><span class="fa fa-book"></span> Show Guide</a>
-                            <a class="btn btn-primary" id="showChangelog"><span class="fa fa-github"></span> Show Updates</a>
+                            <a class="btn btn-primary" id="showInstructions"><span class="fa muximux-book"></span> Show Guide</a>
+                            <a class="btn btn-primary" id="showChangelog"><span class="fa muximux-github"></span> Show Updates</a>
                         </div>
-                    </div>
 
                     <div id="instructionsContainer" class="alert alert-info">
                         <h3>Instructions</h3>
@@ -235,18 +251,12 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
                     <div id="backupiniContainer" class="alert alert-warning">
                         <h3>backup.ini.php Contents</h3>
                         <div class="text-center">
-                            <a class="btn btn-danger" id="removeBackup"><span class="fa fa-trash"></span> Remove backup.ini.php</a>
+                            <a class="btn btn-danger" id="removeBackup"><span class="fa muximux-trash"></span> Remove backup.ini.php</a>
                         </div>
                         <hr/>
                         <div id="backupContents"><pre><?php if (file_exists('backup.ini.php')) echo htmlentities(file_get_contents('backup.ini.php')); ?></pre></div>
                     </div>
                     <?php echo parse_ini(); ?>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <div class='btn-group settingsBtnGrp' role='group' aria-label='Buttons'>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button type='button' class="btn btn-primary" id='settingsSubmit' value='Submit Changes'>Save and Reload</button>
                 </div>
             </div>
         </div>
@@ -310,9 +320,9 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
                         </div>
 
                         <div id="splashNav">
-                            <button type="button" id="splashSettings" class="splashNavBtn btn btn-primary btn-lg" data-dismiss="modal"><span class="fa fa-cog icon-4x"></span></button>
-                            <button type="button" id="splashLog" class="splashNavBtn btn btn-primary btn-lg" data-dismiss="modal"><span class="fa fa-file-text-o icon-4x"></span></button>
-                            <button type="button" id="splashLogout" class="splashNavBtn btn btn-primary btn-lg"><span class="fa fa-sign-out icon-4x"></span></button>
+                            <button type="button" id="splashSettings" class="splashNavBtn btn btn-primary btn-lg" data-dismiss="modal"><span class="fa fa-cog muximux-icon-4x"></span></button>
+                            <button type="button" id="splashLog" class="splashNavBtn btn btn-primary btn-lg" data-dismiss="modal"><span class="fa fa-file-text-o muximux-icon-4x"></span></button>
+                            <button type="button" id="splashLogout" class="splashNavBtn btn btn-primary btn-lg"><span class="fa fa-sign-out muximux-icon-4x"></span></button>
                         </div>
 
                     </div>
@@ -327,7 +337,41 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
     </div>
     <div id="updateContainer"></div>
     <?php echo metaTags(); ?>
-    <script type="text/javascript" src="combineify.php?type=javascript&files=js/jquery-2.2.4.min.js,js/jquery-ui.min.js,js/jquery.form.min.js,js/bootstrap.min.js,js/iconset-muximux.js,js/bootstrap-iconpicker.min.js,js/main.js,js/functions.js,js/spectrum.min.js,js/modernizr-custom-3.3.1.min.js,js/jquery.ui.touch-punch.min.js,js/yrss.min.js,js/jquery.webticker.min.js"></script>
+
+
+<script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="js/tether.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/iconset-muximux.js"></script>
+<script type="text/javascript" src="js/yrss.min.js"></script>
+<script type="text/javascript" src="js/jquery.webticker.min.js"></script>
+<script type="text/javascript" src="js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="js/jquery.form.min.js"></script>
+
+<script type="text/javascript" src="js/main.js"></script>
+<script type="text/javascript" src="js/functions.js"></script>
+
+
+<script type="text/javascript" src="js/jquery.fonticonpicker.min.js" defer></script>
+<script type="text/javascript" src="js/spectrum.min.js" defer></script>
+<script type="text/javascript" src="js/modernizr-custom-3.3.1.min.js"></script>
+<script type="text/javascript" src="js/jquery.ui.touch-punch.min.js"></script>
+<script type="text/javascript">
+    var loaded = false;
+    jQuery(document).ready(function($) {
+        var source = <?php echo imii_generate_fip_source_json( $icomoon_icons, 'class' ); ?>;
+        var searchSource = <?php echo imii_generate_fip_search_json( $icomoon_icons ); ?>;
+        $('.iconpicker').fontIconPicker({
+            source: source,
+            searchSource: searchSource,
+            theme: 'fip-bootstrap'
+        });
+        loaded = true;
+    });
+</script>
+
+
+
 
 
 <?php

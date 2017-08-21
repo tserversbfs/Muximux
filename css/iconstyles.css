@@ -1,0 +1,90 @@
+/**
+ * IcoMoon Icon Indexer App
+ *
+ * Made by Swashata <swashata@intechgrity.com>
+ * @link https://github.com/swashata/IcoMoonIconIndexer
+ */
+[class^="muximux-"], [class*=" muximux-"] {
+    font-family: 'Muximux';
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+ 
+    /* Better Font Rendering =========== */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+[class^="muximux-"]:before, [class*=" muximux-"]:before {
+    content: attr(muximux-);
+}
+#main {
+	margin: 50px 0 0 0;
+}
+#site-footer {
+	margin: 50px 0 0 0;
+}
+#site-footer .well {
+	margin: 0;
+	border-radius: 0;
+}
+
+.font-previewer,
+.font-previewer i {
+	font-size: 32px;
+	padding: 0;
+}
+.cat {
+	width: 110px;
+}
+.list-group-item.active {
+	color: #fff;
+	text-shadow: 0 0 1px #000;
+}
+.list-group-item.active small {
+	color: #eee;
+}
+.list-group-item.active small,
+.list-group-item.active code {
+	text-shadow: none;
+}
+.margin_top {
+	margin-top: 50px;
+}
+
+/** Make SyntaxHighlighter play nice with bootstrap */
+.syntaxhighlighter,
+.syntaxhighlighter *,
+.syntaxhighlighter:before,
+.syntaxhighlighter:after,
+.syntaxhighlighter *:before,
+.syntaxhighlighter *:after {
+	-webkit-box-sizing: content-box;
+	-moz-box-sizing: content-box;
+	box-sizing: content-box;
+}
+.syntaxhighlighter .container:before,
+.syntaxhighlighter .container:after {
+	display: none;
+}
+#options .syntaxhighlighter code,
+.syntaxhighlighter code {
+	white-space: nowrap;
+}
+body .syntaxhighlighter table,
+body .syntaxhighlighter table tbody,
+body .syntaxhighlighter table tr,
+body .syntaxhighlighter table td,
+body .syntaxhighlighter table code,
+body .syntaxhighlighter table div {
+	font-size: 16px !important;
+}
+.syntaxhighlighter {
+	max-height: 300px;
+}
+
+table .syntaxhighlighter {
+	max-width: 300px;
+}

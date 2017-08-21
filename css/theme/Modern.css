@@ -56,11 +56,11 @@ iframe {
 }
 
 .cd-tabs-navigation a {
-    color: #818181;
+    color: #818181 !important;
 }
 
 .cd-tabs-navigation a:hover {
-    color: #f1f3f2; /* Hover text colour */
+    color: #f1f3f2 !important; /* Hover text colour */
     background-color: rgba(233, 230, 202, 0.3);
 }
 

@@ -45,7 +45,7 @@ function htmlEntities(str) {
 }
 
 function dropDownFixPosition(button, dropdown) {
-    var dropDownTop = button.offset().top + button.outerHeight();
+    var dropDownTop = button.offset().top + button.height();
     dropdown.css('top', dropDownTop + "px");
     dropdown.css('left', $(window).width() - $('.drop-nav').width() - button.offset().left + "px");
 }
@@ -59,26 +59,26 @@ function settingsEventHandlers() {
     // Event Handler for show/hide instructions
     $('#showInstructions').click(function() {
         $('#instructionsContainer').slideToggle(1000);
-        if ($(this).html() == "<span class=\"fa fa-book\"></span> Show Guide") $(this).html('<span class=\"fa fa-book\"></span> Hide Guide');
-        else $(this).html('<span class=\"fa fa-book\"></span> Show Guide');
+        if ($(this).html() == "<span class=\"fa muximux-book\"></span> Show Guide") $(this).html('<span class=\"fa muximux-book\"></span> Hide Guide');
+        else $(this).html('<span class=\"fa muximux-book\"></span> Show Guide');
     });
     // Event Handler for show/hide changelog
     $('#showChangelog').click(function() {
         $('#changelogContainer').slideToggle(1000);
-        if ($(this).html() == "<span class=\"fa fa-github\"></span> Show Updates") {
-            $(this).html('<span class=\"fa fa-github\"></span> Hide Updates');
+        if ($(this).html() == "<span class=\"fa muximux-github\"></span> Show Updates") {
+            $(this).html('<span class=\"fa muximux-github\"></span> Hide Updates');
             viewChangelog();
         }
-        else $(this).html('<span class=\"fa fa-github\"></span> Show Updates');
+        else $(this).html('<span class=\"fa muximux-github\"></span> Show Updates');
     });
     // Event Handler for backup.ini show/hide button
     if ($('#backupContents').text() != "") {
-        $('#topButtons').append('<a class="btn btn-primary" id="showBackup"><span class=\"fa fa-book\"></span> Show Backup INI</a>')
+        $('#topButtons').append('<a class="btn btn-primary" id="showBackup"><span class=\"fa muximux-book\"></span> Show Backup INI</a>')
         $('#topButtons').css('width', '425px')
         $('#showBackup').click(function() {
             $('#backupiniContainer').slideToggle(1000);
-            if ($(this).html() == "<span class=\"fa fa-book\"></span> Show Backup INI") $(this).html('<span class=\"fa fa-book\"></span> Hide Backup INI');
-            else $(this).html('<span class=\"fa fa-book\"></span> Show Backup INI');
+            if ($(this).html() == "<span class=\"fa muximux-book\"></span> Show Backup INI") $(this).html('<span class=\"fa muximux-book\"></span> Hide Backup INI');
+            else $(this).html('<span class=\"fa muximux-book\"></span> Show Backup INI');
         });
     }
     // Remove all event handler
@@ -143,7 +143,7 @@ function settingsEventHandlers() {
         var rand = Math.floor((Math.random() * 999999) + 1);
         $('#sortable').append(
 		'<div class="applicationContainer newApp" id="' + rand + 'newApplication">' +
-			'<span class="bars fa fa-bars"></span>' +
+			'<span class="bars fa muximux-bars"></span>' +
 			'<div class="appdiv form-group">' +
 				'<label for="' + rand + 'newApplication_-_name" class="col-xs-4 control-label right-label">Name: </label>' +
 				'<div class="col-xs-7 col-md-8">' +
@@ -293,9 +293,9 @@ function viewChangelog() {
     output += "<p>Updates to your version of <a href='https://github.com/mescon/Muximux/' target='_blank'>Muximux</a> were uploaded to Github " + (differenceDays == 1 ? 'today' : differenceDays - 1 + (differenceDays == 2 ? ' day ago' : ' days ago') ) + ".</p>";
     output += "<div class='btn-group' role='group' aria-label='Buttons' id='topButtons'>";
     if (difference > 0) {
-        output +="<a class='btn btn-primary' id='downloadUpdate'><span class='fa fa-arrow-circle-down'></span> Install Now</a>";
+        output +="<a class='btn btn-primary' id='downloadUpdate'><span class='fa muximux-arrow-circle-down'></span> Install Now</a>";
     }
-    output +="<a class='btn btn-primary' id='refreshUpdate'><span class='fa fa-rotate-right'></span> Refresh Updates</a>" +
+    output +="<a class='btn btn-primary' id='refreshUpdate'><span class='fa muximux-rotate-right'></span> Refresh Updates</a>" +
                     "</div>";
     if (difference > 0) {
 
@@ -370,21 +370,6 @@ function datediff(latestDate) {
     var difference_ms = localDate_ms - githubDate_ms;
     return Math.round(difference_ms / 86400000);
 }
-// Gets the secret key that was generated on load. This AJAX call can not be async - other functions rely on this property to be set first.
-function getSecret() {
-    $.ajax({
-        async: true,
-        dataType: 'text',
-        url: "muximux.php?get=secret",
-        type: 'GET',
-        success: function(data) {
-            $('#secret').data({
-                data: data
-            });
-        }
-    });
-}
-
 
 function setCookie(cname, cvalue, exdays) {
     var d = new Date();
@@ -405,7 +390,7 @@ function getCookie(cname) {
 }
 // Set document title including title of the page as configured in settings.ini.php
 function setTitle(title) {
-    $(document).attr("title", title + " - " + $('#maintitle').attr('data'));
+    $(document).attr("title", title + " - " + $('#title-data').attr('data'));
 }
 // Idea and implementation graciously borrowed from PlexPy (https://github.com/drzoidberg33/plexpy)
 function updateBox($force) {
@@ -444,6 +429,49 @@ function updateBox($force) {
             setCookie('updateDismiss', 'true', 1 / 24);
             write_log('Update notification dismissed for one hour.');
         });
+    }
+}
+
+function updateElement(id,value) {
+    if (id.indexOf("_-_") !== -1) {
+        sections = id.split("_-_");
+        id = sections[0];
+        var key = sections[1],
+            elements = $("[data-content="+id+"]"),
+            elementFrame = elements.find("li"),
+            elementTab = elements.find("a"),
+            elementSplash = elements.find("div");
+
+        console.log("Frame: " + elementFrame.attr("data-content"));
+        console.log("Tab: " + elementTab.attr("data-title"));
+
+        switch(key) {
+            case "url":
+                elementFrame.attr("src",value);
+                break;
+            case "color":
+                elementTab.attr("data-color",value);
+                break;
+            case "enabled":
+                if (value == "false") {
+                    if (elementFrame.length !== 0) document.removeChild(elementFrame);
+                    if (elementTab.length !== 0) document.removeChild(elementTab);
+                    if (elementSplash.length !== 0) document.removeChild(elementSplash);
+                }
+                break;
+            case "dd":
+                break;
+            case "landingpage":
+                break;
+            case "name":
+                elementTab.text(value);
+                elementSplash.attr("data-content",value);
+                elementSplash.find(a).attr("data-title",value);
+                elementSplash.find(a).find(p).text(value);
+                break;
+            case "default":
+                break;
+        }
     }
 }
 
@@ -493,6 +521,14 @@ function downloadUpdate($sha) {
 		});
 
     } 
+}
+
+function reStyle(selector, property, value) {
+    for (var i=0; i<document.styleSheets.length;i++) {//Loop through all styles
+        //Try add rule
+        try { document.styleSheets[i].insertRule(selector+ ' {'+property+':'+value+'}', document.styleSheets[i].cssRules.length);
+        } catch(err) {try { document.styleSheets[i].addRule(selector, property+':'+value);} catch(err) {}}//IE
+    }
 }
 
 // A little countdown function to reload and tell the user why
@@ -592,7 +628,7 @@ function getsupportedprop(proparray) {
 
 // Shhh, we just won't mention this is here for now
 function setupFeed(url, isMobile) {
-	$('#feed').rssfeed(url, {
+	$('#feed').yrss(url, {
 		ssl: true,
 		limit: 20,
 		showerror: true,
@@ -638,6 +674,12 @@ function setupMobileTicker() {
 		
 }
 
+
+var framePreload = function(url,iframe) {
+    var frame = iframe;
+    frame.src = url;
+    return frame;
+};
 // Parses passed url and looks for the form 'https://:34343/something'. If after double slash after protocol there is no host present, a local host is assumed and is placed before port part.
 // The url from the example will be transformed into 'https://somehost:34343/something', where somehost is the host at which the muximux was accessed.
 // User is able also to add credentials to the custom port form i.e. 'ftp://login:password@:2525/path' and it will be transformed into 'ftp://login:password@somehost:2525/path'.
