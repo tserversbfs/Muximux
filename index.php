@@ -18,6 +18,7 @@ if(empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "off"){
 	}
 }
 session_start();
+setStartUrl();
 defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
     defined("CONFIGEXAMPLE") ? null : define('CONFIGEXAMPLE', 'settings.ini.php-example');
     defined("SECRET") ? null : define('SECRET', 'secret.txt');
@@ -350,23 +351,22 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
 
 
 <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
-<script type="text/javascript" src="js/tether.min.js"></script>
-<script type="text/javascript" src="js/bootstrap.min.js"></script>
-<script type="text/javascript" src="js/iconset-muximux.js"></script>
-<script type="text/javascript" src="js/yrss.min.js"></script>
-<script type="text/javascript" src="js/jquery.webticker.min.js"></script>
-<script type="text/javascript" src="js/jquery-ui.min.js"></script>
-<script type="text/javascript" src="js/jquery.form.min.js"></script>
 
-<script type="text/javascript" src="js/main.js"></script>
-<script type="text/javascript" src="js/functions.js"></script>
+<!-- We don't need the rest of these until the DOM is loaded -->
 
-
+<script type="text/javascript" src="js/tether.min.js" defer ></script>
+<script type="text/javascript" src="js/bootstrap.min.js" defer></script>
+<script type="text/javascript" src="js/yrss.min.js" defer></script>
+<script type="text/javascript" src="js/jquery.webticker.min.js" defer></script>
+<script type="text/javascript" src="js/jquery-ui.min.js" defer></script>
+<script type="text/javascript" src="js/jquery.form.min.js" defer></script>
+<script type="text/javascript" src="js/main.js" defer></script>
+<script type="text/javascript" src="js/functions.js" defer></script>
 <script type="text/javascript" src="js/jquery.fonticonpicker.min.js" defer></script>
 <script type="text/javascript" src="js/spectrum.min.js" defer></script>
-<script type="text/javascript" src="js/modernizr-custom-3.3.1.min.js"></script>
-<script type="text/javascript" src="js/bootstrap-slider.js"></script>
-<script type="text/javascript" src="js/jquery.ui.touch-punch.min.js"></script>
+<script type="text/javascript" src="js/modernizr-custom-3.3.1.min.js" defer></script>
+<script type="text/javascript" src="js/bootstrap-slider.js" defer></script>
+<script type="text/javascript" src="js/jquery.ui.touch-punch.min.js" defer></script>
 <script type="text/javascript">
     if('serviceWorker' in navigator) {
         navigator.serviceWorker.register('service-worker.js').then(function(registration) {

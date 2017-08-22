@@ -134,7 +134,11 @@ p {
     .sp-preview {
         width: 99%!important;
     }
-
+    .loader-header {
+        top: 10px;
+        right: 20px;
+        position: absolute;
+    }
 }
 
 @media only screen and (min-width: 768px) {
@@ -1037,6 +1041,8 @@ iframe {
     right: 20px;
     position: absolute;
 }
+
+
 
 .cssload-loader{width:24px;height:24px;position:absolute;left:30px;top:50%;transform:translate3d(-50%,-50%,0);-o-transform:translate3d(-50%,-50%,0);-ms-transform:translate3d(-50%,-50%,0);-webkit-transform:translate3d(-50%,-50%,0);-moz-transform:translate3d(-50%,-50%,0);perspective:1200px;-o-perspective:1200;-ms-perspective:1200;-webkit-perspective:1200;-moz-perspective:1200}
 .cssload-flipper{position:relative;display:block;height:inherit;width:inherit;animation:cssload-flip 1.38s infinite ease-in-out;-o-animation:cssload-flip 1.38s infinite ease-in-out;-ms-animation:cssload-flip 1.38s infinite ease-in-out;-webkit-animation:cssload-flip 1.38s infinite ease-in-out;-moz-animation:cssload-flip 1.38s infinite ease-in-out;transform-style:preserve-3d;-o-transform-style:preserve-3d;-ms-transform-style:preserve-3d;-webkit-transform-style:preserve-3d;-moz-transform-style:preserve-3d}

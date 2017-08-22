@@ -406,32 +406,14 @@ function isDomainAvailible($domain) {
 }
 
 function setStartUrl() {
-	$manifest = dirname(__FILE__)."/manifest.json";
-	$reading = fopen($manifest, 'r');
-	$writing = fopen("$manifest.tmp", 'w');
+	$file = dirname(__FILE__)."/manifest.json";
+	$json = json_decode(file_get_contents($file),true);
 	$url = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-	$replaced = false;
-
-	while (!feof($reading)) {
-		$line = fgets($reading);
-		if (stristr($line,'start_url')) {
-			write_log("Changing start URL");
-			$newLine = '"start_url":"'.$url.'",'.PHP_EOL;
-			if ($line !== $newLine) $line = $newLine;
-			$replaced = true;
-		}
-		fputs($writing, $line);
+	if (! $json) die();
+	if ($json['start_url'] !== $url) {
+		$json['start_url'] = $url;
+		file_put_contents($file, json_encode($json,JSON_PRETTY_PRINT));
 	}
-	fclose($reading); fclose($writing);
-// might as well not overwrite the file if we didn't replace anything
-	if ($replaced)
-	{
-		rename("$manifest.tmp", $manifest);
-	} else {
-		unlink("$manifest.tmp");
-	}
-
-
 }
 
 // Check if the user changes tracking branch, which will change the SHA and trigger an update notification

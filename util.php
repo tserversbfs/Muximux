@@ -22,8 +22,8 @@ function getThemeFile() {
 }
 
 // Appends lines to file and makes sure the file doesn't grow too much
-// You can supply a level, which should be a one-letter code (E for error, D for debug, I for information)
-// If a level is not supplied, it will be assumed to be Informative.
+// You can supply a level, which should be a one of (ERROR, WARN, DEBUG, INFO)
+// If a level is not supplied, it will be assumed to be DEBUG.
 function write_log($text,$level=null,$caller=false) {
 	if ($level === null) {
 		$level = 'DEBUG';
@@ -66,18 +66,6 @@ function getCaller() {
 		}
 	}
 	return $caller;
-}
-
-
-// Coalesce hack
-function c() {
-	$args = func_get_args();
-	foreach ($args as $arg) {
-		if (!empty($arg)) {
-			return $arg;
-		}
-	}
-	return NULL;
 }
 
 
