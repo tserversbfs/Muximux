@@ -248,51 +248,51 @@ function parse_ini()
 							<div class='appDiv form-group'>
 									<label for='" . $section . "_-_url' class='col-xs-6 col-sm-4 control-label left-label'>Name: </label>
 									<div class='col-xs-6 col-sm-8 col-md-4 col-lg-8'>
-										<input class='form-control form-control-sm settingInput" . $section . "_-_value' name='" . $section . "_-_name' value='" . $section . "'>
+										<input data-section='" . $section . "' class='form-control form-control-sm settingInput" . $section . "_-_value' name='" . $section . "_-_name' value='" . $section . "'>
 									</div>
 								</div>
 								<div class='appDiv form-group'>
 									<label for='" . $section . "_-_url' class='col-xs-6 col-sm-4 control-label left-label'>URL: </label>
 									<div class='col-xs-6 col-sm-8 col-md-4 col-lg-8'>
-										<input class='form-control form-control-sm settingInput" . $section . "_-_value' name='" . $section . "_-_url' value='" . $url . "'>
+										<input data-section='" . $section . "' class='form-control form-control-sm settingInput" . $section . "_-_value' name='" . $section . "_-_url' value='" . $url . "'>
 									</div>
 								</div>
 								<div  class='appDiv form-group'>
 									<label for='" . $section . "_-_scale' class='col-xs-6 col-sm-4 control-label col-form-label left-label'>Zoom: </label>
 									<div class='slider-outer col-xs-6 col-md-4 col-lg-3'>
-										<input class='sliderInput' id='" . $section . "_-_scale' data-slider-id='" . $section . "_-_scale' type='text' data-slider-min='0' data-slider-max='100' data-slider-step='10' data-slider-value='".$scale."'/>
+										<input data-section='" . $section . "' class='sliderInput' id='" . $section . "_-_scale' data-slider-id='" . $section . "_-_scale' type='text' data-slider-min='0' data-slider-max='100' data-slider-step='10' data-slider-value='".$scale."'/>
 									</div>
 								</div>
 								<div class='appDiv form-group'>
 									<label for='" . $section . "_-_icon' class='col-xs-6 col-sm-4 control-label left-label'>Icon: </label>
-									<input data-bv-notempty='true' class='iconpicker settingInput' data-bv-notempty-message='You must pick a font' type='text' name='" . $section . "_-_icon' id='fip_1' value='".$icon."' />
+									<input data-section='" . $section . "' data-bv-notempty='true' class='iconpicker settingInput' data-bv-notempty-message='You must pick a font' type='text' name='" . $section . "_-_icon' id='fip_1' value='".$icon."' />
 								</div>
 								<div class='appDiv form-group colorDiv'>
 									<label for='" . $section . "_-_color' class='col-xs-6 col-sm-4 col-lg-3 control-label color-label left-label'>Color:</label>
 									<div class='appInput col-xs-6 col-sm-8 col-md-4 col-lg-3'>
-										<input id='" . $section . "_-_color' class='form-control form-control-sm appsColor settingInput" . $section . "_-_color' value='" . $color . "' name='" . $section . "_-_color'>
+										<input data-section='" . $section . "' id='" . $section . "_-_color' class='form-control form-control-sm appsColor settingInput" . $section . "_-_color' value='" . $color . "' name='" . $section . "_-_color'>
 									</div>
 								</div>
 							</div>
 							<div class='row justify-content-center'>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 		                        	<label for='" . $section . "_-_enabled' class='btn btn-primary btn-sm btn-block ".($enabled ? 'active' : ''). "'>
-										<input type='checkbox' class='settingInput' id='" . $section . "_-_enabled' name='" . $section . "_-_enabled'".($enabled ? ' checked' : '') .">Enabled
+										<input data-section='" . $section . "' type='checkbox' class='settingInput' id='" . $section . "_-_enabled' name='" . $section . "_-_enabled'".($enabled ? ' checked' : '') .">Enabled
 									</label>
 								</div>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 		                        	<label for='" . $section . "_-_landingpage' class='btn btn-primary btn-sm btn-block ".($landingpage ? 'active' : ''). "'>Splash Item
-										<input type='checkbox' class='settingInput' id='" . $section . "_-_landingpage' name='" . $section . "_-_landingpage'".($landingpage ? ' checked' : '') .">
+										<input data-section='" . $section . "' type='checkbox' class='settingInput' id='" . $section . "_-_landingpage' name='" . $section . "_-_landingpage'".($landingpage ? ' checked' : '') .">
 									</label>
 								</div>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 		                        	<label for='" . $section . "_-_dd' class='btn btn-primary btn-sm btn-block".($dd ? 'active' : ''). "'>
-										<input type='checkbox' class='settingInput' id='" . $section . "_-_dd' name='" . $section . "_-_dd'".($dd ? ' checked' : '') .">Dropdown
+										<input data-section='" . $section . "' type='checkbox' class='settingInput' id='" . $section . "_-_dd' name='" . $section . "_-_dd'".($dd ? ' checked' : '') .">Dropdown
 									</label>
 								</div>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 									<label class='btn btn-primary btn-sm".($default ? ' active' : ''). "' for='" . $section . "_-_default' >
-										<input type='radio' class='settingInput' name='" . $section . "_-_default' id='" . $section . "_-_default' autocomplete='off' ".($default ? ' checked' : '') .">Default
+										<input data-section='" . $section . "' type='radio' class='settingInput' name='" . $section . "_-_default' id='" . $section . "_-_default' autocomplete='off' ".($default ? ' checked' : '') .">Default
 									</label>
 								</div>
 							</div>

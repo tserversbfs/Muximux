@@ -3,12 +3,12 @@ var debugDD = false;
 jQuery(document).ready(function($) {
     hasDrawer = ($('#autohide-data').attr('data') === 'true');
     showSplash = ($('#splashscreen-data').attr('data') === 'true');
-    dropDown = true;
     authentication = ($('#authentication-data').attr("data") === 'true');
     tabColor = ($("#tabcolor-data").attr('data') === 'true');
     secret = $('#secret-data').attr("data");
     rss = ($('#rss-data').attr("data") === 'true');
     $('.rssUrlGroup').css('display', (rss ? 'block' : 'none'));
+    dropDown = true;
 
     $('#pleaseWaitDialog').animate({
         opacity: .25,
@@ -53,9 +53,7 @@ jQuery(document).ready(function($) {
         if (!authentication) {
             $('#splashLogout').addClass('hidden');
         }
-        $('#splashModal').modal('show');
-        $('#splashModal').addClass("in");
-        rss = ($('#rss-data').attr("data") === 'true');
+        $('#splashModal').modal('show').addClass("in");
         if (rss) {
             rssUrl = $('#rssUrl-data').attr("data");
             //setupFeed(rssUrl, isMobile);
@@ -79,8 +77,7 @@ jQuery(document).ready(function($) {
         var selectedBtnTab = $('.cd-tabs-bar').find('a[data-content="' + selectedBtn + '"]');
         selectedBtnTab.click();
         if (isMobile) {
-            $('.drop-nav').toggleClass('hide-nav');
-            $('.drop-nav').toggleClass('show-nav');
+            $('.drop-nav').toggleClass('hide-nav').toggleClass('show-nav');
         }
         $('#splashModal').modal('hide');
     });
@@ -250,15 +247,13 @@ jQuery(document).ready(function($) {
             ["#600", "#783f04", "#7f6000", "#274e13", "#0c343d", "#073763", "#20124d", "#4c1130"]
         ]
     });
-    $('.sp-replacer').addClass('form-control');
-    $('.sp-replacer').addClass('form-control-sm');
+    $('.sp-replacer').addClass('form-control').addClass('form-control-sm');
 
 
     if ($('#branch-changed').attr('data') == 'true') {
         $('#updateContainer').html("<button type='button' id='updateDismiss' class='close pull-right'>&times;</button>" +
             "<span>Branch changed detected. Would you like to install the latest version now?" +
-            "<div id='downloadModal'><code>Click here</code></div> to install.</span>");
-        $('#updateContainer').fadeIn("slow");
+            "<div id='downloadModal'><code>Click here</code></div> to install.</span>").fadeIn("slow");
         $('#downloadModal').click(function () {
             branch = $("#branch-data").attr('data');
             downloadUpdate(branch);
@@ -285,8 +280,7 @@ jQuery(document).ready(function($) {
             var tab = $(this);
 
             if (!isMobile) {
-                $('.drop-nav').addClass('hide-nav');
-                $('.drop-nav').removeClass('show-nav');
+                $('.drop-nav').addClass('hide-nav').removeClass('show-nav');
             }
             resizeIframe(hasDrawer, isMobile); // Call resizeIframe when document is ready
             event.preventDefault();
@@ -327,7 +321,7 @@ jQuery(document).ready(function($) {
                     }, 200);
                 }
             }
-            selectedItem.dblclick(function () {
+            selectedItem.ondblclick(function () {
                 selectedContent.children('iframe').attr('src', selectedContent.children('iframe').attr('src'));
             });
         });
@@ -339,7 +333,7 @@ jQuery(document).ready(function($) {
     });
 
 
-    $("input").change(function(input) {
+    $("input").change(function() {
         var id;
         if ($(this).hasClass("settingInput") && loaded) {
             id = $(this).attr('id');
@@ -349,8 +343,10 @@ jQuery(document).ready(function($) {
             } else {
                 value = $(this).val();
             }
-            if ($(this).id === 'publicAddress') {
-                value = resetApiUrl($(this).val());
+            if (id.contains("_-_url")) {
+                var section = $(this).data("section");
+                console.log("Section: "+ section);
+                $('li[data-content="' + section + '"]').find('iframe').src(value).data(value);
             }
             if (id === 'authentication') {
                 $('.inputdiv').css('display', (value ? 'block' : 'none'));
