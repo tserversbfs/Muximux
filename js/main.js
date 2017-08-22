@@ -343,7 +343,7 @@ jQuery(document).ready(function($) {
             } else {
                 value = $(this).val();
             }
-            if (id.contains("_-_url")) {
+            if (id.search("_-_url" >= 0)) {
                 var section = $(this).data("section");
                 console.log("Section: "+ section);
                 $('li[data-content="' + section + '"]').find('iframe').src(value).data(value);
@@ -364,8 +364,6 @@ jQuery(document).ready(function($) {
                 setSelectedColor();
                 resizeIframe(hasDrawer, isMobile);
             }
-
-
             console.log("Sending param: " + id + " value: " + value);
 
             $.get('muximux.php?secret=' + secret, {id: id, value: value}, function () {

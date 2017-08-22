@@ -70,6 +70,8 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
     <link rel="stylesheet" href="css/muximux.css"/>
     <link rel="stylesheet" href="<?php echo getThemeFile();?>">
     <link rel="stylesheet" href="css/spectrum.min.css"/>
+    <link rel="stylesheet" href="css/jquery.fonticonpicker.min.css">
+    <link rel="stylesheet" href="css/jquery.fonticonpicker.bootstrap.min.css">
 
     <title><?php echo getTitle(); ?></title>
 </head>
