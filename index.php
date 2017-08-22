@@ -58,7 +58,6 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
     <meta name="application-name" content="Muximux">
     <meta name="msapplication-config" content="images/favicon/browserconfig.xml?v=ngGoyLXN9n">
     <meta name="theme-color" content="#ffffff">
-    <link rel="stylesheet" href="css/cssreset.min.css"/>
     <link rel="stylesheet" href="css/jquery-ui.min.css"/>
     <link rel="stylesheet" href="css/font-awesome.min.css"/>
     <link rel="stylesheet" href="css/font-muximux.css"/>
@@ -71,8 +70,6 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
     <link rel="stylesheet" href="css/muximux.css"/>
     <link rel="stylesheet" href="<?php echo getThemeFile();?>">
     <link rel="stylesheet" href="css/spectrum.min.css"/>
-    <link rel="stylesheet" href="css/jquery.fonticonpicker.min.css">
-    <link rel="stylesheet" href="css/jquery.fonticonpicker.bootstrap.min.css">
 
     <title><?php echo getTitle(); ?></title>
 </head>
