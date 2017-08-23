@@ -1,35 +1,36 @@
 <?php
-ini_set("log_errors", 1);
-ini_set('max_execution_time', 300);
-error_reporting(E_ERROR);
-$errorLogPath = "muximux.log";
-ini_set("error_log", $errorLogPath);
-date_default_timezone_set((date_default_timezone_get() ? date_default_timezone_get() : "America/Chicago"));
-require_once 'muximux.php';
-require_once dirname(__FILE__) . '/util.php';
-require_once 'iconindex.php';
-if (is_session_started()) session_destroy();
-if(empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "off"){
-	$redirect = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-	if (isDomainAvailible($redirect)) {
-		header('HTTP/1.1 301 Moved Permanently');
-		header('Location: ' . $redirect);
-		exit();
-	}
-}
-session_start();
-setStartUrl();
-defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
-    defined("CONFIGEXAMPLE") ? null : define('CONFIGEXAMPLE', 'settings.ini.php-example');
-    defined("SECRET") ? null : define('SECRET', 'secret.txt');
+    ini_set("log_errors", 1);
+    ini_set('max_execution_time', 300);
+    error_reporting(E_ERROR);
+    $errorLogPath = "muximux.log";
+    ini_set("error_log", $errorLogPath);
+    date_default_timezone_set((date_default_timezone_get() ? date_default_timezone_get() : "America/Chicago"));
+    require_once 'muximux.php';
+    require_once dirname(__FILE__) . '/util.php';
+    require_once 'iconindex.php';
+    if (is_session_started()) session_destroy();
+    if(empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "off"){
+        $redirect = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        if (isDomainAvailible($redirect)) {
+            header('HTTP/1.1 301 Moved Permanently');
+            header('Location: ' . $redirect);
+            exit();
+        }
+    }
+    session_start();
+    setStartUrl();
+    $configPath = getenv('CONFIG_PATH') ? getenv('CONFIG_PATH') : dirname(__FILE__) . '/config/';
+    $logPath = getenv('LOG_PATH') ? getenv('LOG_PATH') : dirname(__FILE__) . '/log/';
+    defined("CONFIG") ? null : define('CONFIG', $configPath.'settings.ini.php');
+    defined("CONFIGEXAMPLE") ? null : define('CONFIGEXAMPLE', dirname(__FILE__).'/config/settings.ini.php-example');
+    defined("LOGPATH") ? null : define('LOGPATH',$logPath.'muximux.log');
     require dirname(__FILE__) . '/vendor/autoload.php';
     $config = new Config_Lite(CONFIG);
-    if ($config->get('general', 'authentication', 'false') == "true") {
+    if ($config->get('general', 'authentication', 'off') === "login") {
         define('DS',  TRUE); // used to protect includes
         define('USERNAME', $_SESSION['username']);
         define('SELF',  $_SERVER['PHP_SELF'] );
-        if (!USERNAME or isset($_GET['logout']))
-                include('login.php');
+        if (!USERNAME or isset($_GET['logout'])) include('login.php');
     }
 
 ?>

@@ -4,8 +4,8 @@ jQuery(document).ready(function($) {
     hasDrawer = ($('#autohide-data').attr('data') === 'true');
     showSplash = ($('#splashscreen-data').attr('data') === 'true');
     authentication = $('#authentication-data').attr("data");
-    authentication = (! authentication === 'off');
     tabColor = ($("#tabcolor-data").attr('data') === 'true');
+    themeColor = $("#color-data").attr('data');
     secret = $('#secret-data').attr("data");
     rss = ($('#rss-data').attr("data") === 'true');
     $('.rssUrlGroup').css('display', (rss ? 'block' : 'none'));
@@ -51,7 +51,7 @@ jQuery(document).ready(function($) {
     }
     if (showSplash) {
         $('.rssGroup').show();
-        if (!authentication) {
+        if (!authentication === 'login') {
             $('#splashLogout').addClass('hidden');
         }
         $('#splashModal').modal('show').addClass("in");
@@ -67,12 +67,15 @@ jQuery(document).ready(function($) {
     }
 
     $('#override').css('display', (isMobile ? 'block' : 'none'));
-    $('.inputdiv').css('display', (authentication ? 'block' : 'none'));
+    $('.inputdiv').css('display', (authentication !== 'off' ? 'block' : 'none'));
     setTitle(activeTitle);
     //get appropriate CSS3 box-shadow property
     boxshadowprop = getsupportedprop(['boxShadow', 'MozBoxShadow', 'WebkitBoxShadow'])
     //Hide the nav to start
     $('.drop-nav').toggleClass('hide-nav');
+
+    // Listeners should go here:
+
     splashBtn.on('click', function (event) {
         var selectedBtn = $(this).data('content');
         var selectedBtnTab = $('.cd-tabs-bar').find('a[data-content="' + selectedBtn + '"]');
@@ -118,6 +121,7 @@ jQuery(document).ready(function($) {
     $(".splashNavBtn").hover(function (e) {
         $(this).css("background-color", e.type === "mouseenter" ? themeColor : splashNavBtnColor)
     })
+
     $("#splashLog").click(function () {
         $('#logModal').modal('show');
     });
@@ -131,7 +135,6 @@ jQuery(document).ready(function($) {
             //setupFeed(rssUrl, isMobile);
         }
     });
-
 
     $("#splashSettings").click(function () {
         setTimeout(function () {
@@ -147,16 +150,19 @@ jQuery(document).ready(function($) {
     $('#settingsModal').on('show.bs.modal', function () {
         setTitle("Settings");
     });
+
     $('#logModal').on('show.bs.modal', function () {
         setTitle("Log");
         refresh_log();
 
     });
+
     $('#refreshLog').on('click', function () {
         $('#logContainer').slideToggle();
         refresh_log();
 
     });
+
     // When settings modal closes, set title to the previous title used
     $('.modal').on('hidden.bs.modal', function () {
         var activeTitle = $('.cd-tabs-content').find('.selected').children('iframe').attr("data-title");
@@ -324,7 +330,6 @@ jQuery(document).ready(function($) {
             id = $(this).attr('id');
             var section = $(this).data('section');
             var id = $(this).data('attribute');
-            console.log("Section: " + section + ", ID: " + id);
             var value;
             if (($(this).attr('type') === 'checkbox') || (($(this).attr('type') === 'radio') && id !== 'authentication')) {
                 value = $(this).is(':checked');
@@ -334,26 +339,49 @@ jQuery(document).ready(function($) {
                     value = $("input[name='auths']:checked").attr('id');
                 }
             }
-
             if (id === 'autohide') {
                 hasDrawer = value;
                 setSelectedColor();
                 resizeIframe(hasDrawer, isMobile);
             }
-
             if (id === 'mobileoverride') {
                 overrideMobile = value;
                 setSelectedColor();
                 resizeIframe(hasDrawer, isMobile);
             }
+            if (id === 'default') {
+                value = section;
+                section = 'general';
+            }
+            if (id === 'color' && section === 'general') {
+                themeColor = value;
+                setSelectedColor();
+            }
+            if (id === 'authentication') {
+                authentication = value;
+                if (authentication !== 'off') {
+                    $('a#logout').parent('li').removeClass('hidden');
+                } else {
+                    $('a#logout').parent('li').addClass('hidden');
+                }
 
-            console.log("Sending param: " + id + " value: " + value);
+            }
+            console.log("Section: " + section + ", ID: " + id + ", Value: " + value);
             $.get('muximux.php?secret=' + secret, {section: section, id: id, value: value}, function () {
 
             });
             updateElements(section, id,value);
         }
     });
+
+    var radioButtons = $('.btn-rdo');
+    radioButtons.click(function() {
+        radioButtons.removeClass('active');
+        $(this).addClass('active');
+        $('.defaultInput').checked = false;
+        $(this).children('radio').checked = true;
+    })
+
     $('.sliderInput').on('slideStop',function() {
         console.log("Sliding stopped;")
         id = $(this).attr('id');
@@ -472,6 +500,9 @@ function setSelectedColor() {
     $('.droidtheme').replaceWith('<meta name="theme-color" class="droidtheme" content="' + color + '" />');
     $('.mstheme').replaceWith('<meta name="msapplication-navbutton-color" class="mstheme" content="' + color + '" />');
     $('.iostheme').replaceWith('<meta name="apple-mobile-web-app-status-bar-style" class="iostheme" content="' + color + '" />');
+    $('.logo path').css('fill',themeColor + '!important');
+    $('splashNav.btn').css('border-color',themeColor + '!important');
+    $('.card').css('border','1px solid themeColor !important')
 
     if ((isMobile && !overrideMobile) || isddItem) {
         console.log("Should be setting a dd item color: "+ color);

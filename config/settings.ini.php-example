@@ -10,6 +10,7 @@ rss = "true"
 rssUrl = "https://www.wired.com/feed/"
 userNameInput = "admin"
 password = "muximux"
+default= "Plex"
 
 [settings]
 branch_changed = ""
@@ -28,7 +29,6 @@ scale = 1
 icon = "muximux-plex"
 color = "#f9be03"
 enabled = "true"
-default = "true"
 
 [Couchpotato]
 name = "CouchPotato"

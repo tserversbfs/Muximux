@@ -311,8 +311,8 @@ function parse_ini()
 									</label>
 								</div>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
-									<label class='btn btn-primary btn-sm".($default ? ' active' : ''). "' for='" . $section . "_-_default' >
-										<input data-section='" . $section . "' data-attribute='default' type='radio' class='settingInput' name='" . $section . "_-_default' id='" . $section . "_-_default' autocomplete='off' ".($default ? ' checked' : '') .">Default
+									<label class='btn btn-primary btn-sm btn-rdo".($default ? ' active' : ''). "' for='" . $section . "_-_default' >
+										<input data-section='" . $section . "' data-attribute='default' type='radio' class='settingInput defaultInput' name='appDefault' id='" . $section . "_-_default' autocomplete='off' ".($default ? ' checked' : '') .">Default
 									</label>
 								</div>
 							</div>
@@ -326,8 +326,12 @@ function parse_ini()
                 </div>
                 <div class='text-center' style='margin-top: 15px;'>
                     <div class='btn-group' role='group' aria-label='Buttons'>
-                        <a class='btn btn-primary btn-sm btn-block btn-md' id='addApplication'><span class='fa muximux-plus'></span> Add new</a>
-                        <a class='btn btn-danger btn-md' id='removeAll'><span class='fa muximux-trash'></span> Remove all</a>
+                        <a class='btn btn-primary btn-md' id='addApplication'>
+                        	<span class='fa muximux-plus'></span> Add New
+                        </a>
+                        <a class='btn btn-danger btn-md' id='removeAll'>
+                        	<span class='fa muximux-trash'></span> Remove All
+                        </a>
                     </div>
                 </div>
             </form>";
@@ -485,7 +489,7 @@ function menuItems() {
 	$autohide = $config->getBool('general', 'autohide', false);
 	$dropdown = $config->getBool('general', 'enabledropdown', true);
 	$mobileoverride = $config->getBool('general', 'mobileoverride', false);
-	$authentication = $config->getBool('general', 'authentication', false);
+	$authentication = $config->get('general', 'authentication', 'off');
     $drawerdiv = '';
 	foreach ($config as $keyname => $section) {
         if (($keyname != "general") && ($keyname != "settings")) {
@@ -535,7 +539,7 @@ function menuItems() {
                 		<span class='muximux-home4 mm-lg'></span>
                     </a>
                 </li>
-                <li class='navbtn ".(($authentication == "true") ? '' : 'hidden')."'>
+                <li class='navbtn ".(($authentication === "login") ? '' : 'hidden')."'>
                     <a id='logout' title='Click this button to log out of Muximux.'>
                         <span class='muximux-sign-out mm-lg'></span>
                     </a>
@@ -741,31 +745,32 @@ function metaTags() {
 function frameContent() {
     $config = new Config_Lite(CONFIG);
     if (empty($item)) $item = '';
+    $defaultApp = $config->get('general','default',false);
     foreach ($config as $keyname => $section) {
-    $landingpage = $config->getBool($keyname,'landingpage',false);
-    $enabled = $config->getBool($keyname,'enabled',true);
-    $default = $config->getBool($keyname,'default',false);
-    $scale = $config->get($keyname,'scale',1);
-    $url = $section["url"];
-    $urlArray = parse_url($url);
-	if (!$urlArray) {
-		$protocol = preg_match("/http/",explode("://",$url)[0]) ? explode("://",$url)[0] . "://" : serverProtocol();
-		$url = str_replace($protocol,"",$url);
-		$port = explode(":",$url)[1] ? ":".explode(":",$url)[1] : "";
-		$url = str_replace($port,"",$url);
-		$host = $url ? $url : $_SERVER['HTTP_HOST'];
-		$url = $protocol.$host.$port;
-		$urlArray = parse_url($url);
-	}
-    // TODO: Make sure this still works
-    if ($landingpage) $urlArray['query'] = isset($urlArray['query']) ? $urlArray['query']."&" : ""."landing=" . urlencode($keyname.":".$url);
-    $url = $urlArray ? build_url($urlArray) : $url;
-    if ($enabled && ($keyname != 'settings') && ($keyname != 'general')) {
-		$item .= "
-				<li data-content='" . $keyname . "' data-scale='" . $scale ."' ".($default ? "class='selected'" : '').">
-					<iframe sandbox='allow-forms allow-presentation allow-same-origin allow-pointer-lock allow-scripts allow-popups allow-modals allow-top-navigation'
-					allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true' data-src='".$url."' scrolling='auto' data-title='" . $section["name"] . "'".($default ? "src='$url'" : "")."></iframe>
-				</li>";
+	    $landingpage = $config->getBool($keyname,'landingpage',false);
+	    $enabled = $config->getBool($keyname,'enabled',true);
+	    $default = $config->get($keyname,'name',true) == $defaultApp;
+	    $scale = $config->get($keyname,'scale',1);
+	    $url = $section["url"];
+	    $urlArray = parse_url($url);
+		if (!$urlArray) {
+			$protocol = preg_match("/http/",explode("://",$url)[0]) ? explode("://",$url)[0] . "://" : serverProtocol();
+			$url = str_replace($protocol,"",$url);
+			$port = explode(":",$url)[1] ? ":".explode(":",$url)[1] : "";
+			$url = str_replace($port,"",$url);
+			$host = $url ? $url : $_SERVER['HTTP_HOST'];
+			$url = $protocol.$host.$port;
+			$urlArray = parse_url($url);
+		}
+	    // TODO: Make sure this still works
+	    if ($landingpage) $urlArray['query'] = isset($urlArray['query']) ? $urlArray['query']."&" : ""."landing=" . urlencode($keyname.":".$url);
+	    $url = $urlArray ? build_url($urlArray) : $url;
+	    if ($enabled && ($keyname != 'settings') && ($keyname != 'general')) {
+			$item .= "
+					<li data-content='" . $keyname . "' data-scale='" . $scale ."' ".($default ? "class='selected'" : '').">
+						<iframe sandbox='allow-forms allow-presentation allow-same-origin allow-pointer-lock allow-scripts allow-popups allow-modals allow-top-navigation'
+						allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true' data-src='".$url."' scrolling='auto' data-title='" . $section["name"] . "'".($default ? "src='$url'" : "")."></iframe>
+					</li>";
         }
     }
     return $item;

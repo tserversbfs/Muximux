@@ -1,4 +1,5 @@
 <?php
+require_once(dirname(__FILE__).'/ping/ping.php');
 
 function getThemeFile() {
 	$config = new Config_Lite(CONFIG);
@@ -17,6 +18,25 @@ function getThemeFile() {
 			return $file;
 		}
 	}
+}
+
+
+// Ping one or several hosts.
+// Will return true or false if only one host is specified,
+// returns an associative array if an array is provided.
+function ping($hosts) {
+	$singleHost = false;
+	$results = [];
+	if (is_string($hosts)) {
+		$hosts = [$hosts];
+		$singleHost = true;
+	}
+	foreach ($hosts as $host) {
+		$ping = new JJG\Ping($host,128,5);
+		$latency = $ping->ping();
+		if (!$singleHost) array_push($results,($latency !== false)); else return ($latency !== false);
+	}
+	return (array_combine($hosts,$results));
 }
 
 // Appends lines to file and makes sure the file doesn't grow too much

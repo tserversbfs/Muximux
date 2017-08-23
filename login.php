@@ -1,7 +1,9 @@
 <?php defined('DS') OR die('No direct access allowed.');
-defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
-defined("CONFIGEXAMPLE") ? null : define('CONFIGEXAMPLE', 'settings.ini.php-example');
-defined("SECRET") ? null : define('SECRET', 'secret.txt');
+$configPath = getenv('CONFIG_PATH') ? getenv('CONFIG_PATH') : dirname(__FILE__) . '/config/';
+$logPath = getenv('LOG_PATH') ? getenv('LOG_PATH') : dirname(__FILE__) . '/log/';
+defined("CONFIG") ? null : define('CONFIG', $configPath.'settings.ini.php');
+defined("CONFIGEXAMPLE") ? null : define('CONFIGEXAMPLE', dirname(__FILE__).'/config/settings.ini.php-example');
+defined("LOGPATH") ? null : define('LOGPATH',$logPath.'muximux.log');
 require_once dirname(__FILE__) . '/vendor/autoload.php';
 require_once dirname(__FILE__) . '/util.php';
 $config = new Config_Lite(CONFIG);
