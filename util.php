@@ -74,7 +74,7 @@ function saveConfig(Config_Lite $inConfig) {
 		echo "\n" . 'Exception Message: ' . $e->getMessage();
 		write_log('Error saving configuration.','ERROR');
 	}
-	$configFile = dirname(__FILE__)."/settings.ini.php";
+	$configFile = CONFIG;
 	$cache_new = "'; <?php die('Access denied'); ?>"; // Adds this to the top of the config so that PHP kills the execution if someone tries to request the config-file remotely.
 	$cache_new .= file_get_contents($configFile);
 	file_put_contents($configFile,$cache_new);

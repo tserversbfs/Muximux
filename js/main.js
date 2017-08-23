@@ -278,7 +278,7 @@ jQuery(document).ready(function($) {
                     selectedContentHeight = selectedContent.innerHeight();
                 var srcUrl = selectedContent.children('iframe').data('src');
                 console.log("URL: "+srcUrl);
-                if (srcUrl !== undefined || srcUrl !== "") {
+                if (srcUrl !== undefined && srcUrl !== "") {
                     console.log("Made it to thunderdome.");
                     var protocol = ('https:' === document.location.protocol ? 'https' : 'http');
                     console.log("Protocol is " + protocol);

@@ -764,7 +764,7 @@ function frameContent() {
 		$item .= "
 				<li data-content='" . $keyname . "' data-scale='" . $scale ."' ".($default ? "class='selected'" : '').">
 					<iframe sandbox='allow-forms allow-presentation allow-same-origin allow-pointer-lock allow-scripts allow-popups allow-modals allow-top-navigation'
-					allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true' scrolling='auto' data-title='" . $section["name"] . "' ".($default ? 'src' : 'data-src')."='" . $url . "'></iframe>
+					allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true' data-src='".$url."' scrolling='auto' data-title='" . $section["name"] . "'".($default ? "src='$url'" : "")."></iframe>
 				</li>";
         }
     }
