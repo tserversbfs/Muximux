@@ -1,5 +1,6 @@
 # Do not submit or pull configuration settings when interacting with GitHub.
 *.ini.php
+*.log
 *.idea
 stage/
 .stage/
@@ -14,8 +15,6 @@ api/
 cache/
 test/
 log/
-config/
-!/config/settings.ini.php-example
 /css/theme/
 !/css/theme/Classic.css
 !/css/theme/Modern.css

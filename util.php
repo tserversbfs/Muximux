@@ -5,7 +5,6 @@ function getThemeFile() {
 	$item = $config->get('general', 'theme', 'Classic');
 	$fileName = 'css/theme/'.$item.'.css';
 	if(file_exists($fileName)) {
-		write_log("File exists: $fileName");
 		return $fileName;
 	}
 
@@ -15,7 +14,6 @@ function getThemeFile() {
 	$fileNameLowerCase = strtolower($fileName);
 	foreach($fileArray as $file) {
 		if(strtolower($file) == $fileNameLowerCase) {
-			write_log("Found the file via glob: $file");
 			return $file;
 		}
 	}
@@ -30,7 +28,7 @@ function write_log($text,$level=null,$caller=false) {
 	}
 	if (isset($_GET['pollPlayer'])) return;
 	$caller = $caller ? $caller : getCaller();
-	$filename = 'muximux.log';
+	$filename = LOGPATH;
 	$text = '['.date(DATE_RFC2822) . '] ['.$level.'] ['.$caller . "] - " . trim($text) . PHP_EOL;
 	if (!file_exists($filename)) { touch($filename); chmod($filename, 0666); }
 	if (filesize($filename) > 2*1024*1024) {
@@ -256,6 +254,21 @@ function deleteContent($path){
 		return false;
 	}
 	return true;
+}
+
+function setStartUrl() {
+	$file = ( file_exists(dirname(__FILE__)."/manifest.json")) ? dirname(__FILE__)."/manifest.json" : dirname(__FILE__)."/manifest-template.json";
+	$json = json_decode(file_get_contents($file),true);
+	$url = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+	if (! $json) die();
+	if ($json['start_url'] !== $url) {
+		$json['start_url'] = $url;
+		try {
+			file_put_contents($file, json_encode($json, JSON_PRETTY_PRINT));
+		} catch(Exception $e) {
+			write_log("Exception creating manifest.","ERROR");
+		}
+	}
 }
 
 // Can we execute commands?

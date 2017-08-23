@@ -434,25 +434,20 @@ function updateBox($force) {
     }
 }
 
-function updateElement(id,value) {
-    if (id.indexOf("_-_") !== -1) {
-        sections = id.split("_-_");
-        id = sections[0];
-        var key = sections[1],
-            elements = $("[data-content="+id+"]"),
-            elementFrame = elements.find("li"),
-            elementTab = elements.find("a"),
-            elementSplash = elements.find("div");
+function updateElements(section, id, value) {
 
-        console.log("Frame: " + elementFrame.attr("data-content"));
-        console.log("Tab: " + elementTab.attr("data-title"));
-
-        switch(key) {
+    var elements = $("[data-content="+section+"]"),
+        elementTab = elements.children("a"),
+        elementSplash = elements.children("div"),
+        myFrame = elements.children("iframe");
+    if (section !== 'general') {
+        switch (id) {
             case "url":
-                elementFrame.attr("src",value);
+                myFrame.attr("src", value);
+                myFrame.data("src", value);
                 break;
             case "color":
-                elementTab.attr("data-color",value);
+                elementTab.attr("data-color", value);
                 break;
             case "enabled":
                 if (value == "false") {
@@ -466,13 +461,21 @@ function updateElement(id,value) {
             case "landingpage":
                 break;
             case "name":
+                console.log("Updating name value for " + section);
                 elementTab.text(value);
-                elementSplash.attr("data-content",value);
-                elementSplash.find(a).attr("data-title",value);
-                elementSplash.find(a).find(p).text(value);
+                elementSplash.attr("data-content", value);
+                elementSplash.children('a').attr("data-title", value);
+                elementSplash.children('a').children(p).text(value);
                 break;
             case "default":
                 break;
+        }
+    } else {
+        if (id === 'authentication') {
+            $('.inputdiv').css('display', (value !== "off" ? 'block' : 'none'));
+        }
+        if (id === 'rss') {
+            $('.rssUrlGroup').css('display', (value ? 'block' : 'none'));
         }
     }
 }
@@ -489,7 +492,7 @@ function updateJson() {
 function scaleContent(content, scale) {
     var newWidth = $(window).width() / scale;
     var newHeight = (($(window).height() / scale) - ($('nav').height() / scale));
-    $('.cd-tabs-content').find('li[data-content="' + content + '"]').children('iframe').css({
+    $('.cd-tabs-content').children('li[data-content="' + content + '"]').children('iframe').css({
         '-ms-transform': 'scale(' + scale + ')',
         '-moz-transform': 'scale(' + scale + ')',
         '-o-transform': 'scale(' + scale + ')',
@@ -586,7 +589,7 @@ function setStatus(message,showcounter) {
 
 // Find apps with a scale setting that is more or less than 100%, then re-scale it to the desired setting using scaleContent(selector, scale)
 function scaleFrames() {
-    $('.cd-tabs-content').find('li').each(function(value) {
+    $('.cd-tabs-content').children('li').each(function(value) {
         content = $(this).attr('data-content');
         scale = $(this).attr('data-scale');
         // Mark the scale we are currently using, on the settings modal

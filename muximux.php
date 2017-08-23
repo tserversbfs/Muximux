@@ -5,11 +5,13 @@
 ini_set("log_errors", 1);
 ini_set('max_execution_time', 300);
 error_reporting(E_ERROR);
-$errorLogPath = "muximux.log";
 ini_set("error_log", $errorLogPath);
 date_default_timezone_set((date_default_timezone_get() ? date_default_timezone_get() : "America/Chicago"));
-defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
-defined("CONFIGEXAMPLE") ? null : define('CONFIGEXAMPLE', 'settings.ini.php-example');
+$configPath = getenv('CONFIG_PATH') ? getenv('CONFIG_PATH') : dirname(__FILE__) . '/config/';
+$logPath = getenv('LOG_PATH') ? getenv('LOG_PATH') : dirname(__FILE__) . '/log/';
+defined("CONFIG") ? null : define('CONFIG', $configPath.'settings.ini.php');
+defined("CONFIGEXAMPLE") ? null : define('CONFIGEXAMPLE', dirname(__FILE__).'/config/settings.ini.php-example');
+defined("LOGPATH") ? null : define('LOGPATH',$logPath.'muximux.log');
 require_once dirname(__FILE__) . '/vendor/autoload.php';
 require_once dirname(__FILE__) . '/util.php';
 require_once 'iconindex.php';
@@ -17,7 +19,13 @@ require_once 'iconindex.php';
 
 // Check if this is our first run and do some things.
 if(!file_exists(CONFIG)){
-    copy(CONFIGEXAMPLE, CONFIG);
+	if (file_exists('settings.ini.php')) {
+		if (copy('settings.ini.php',CONFIG)) {
+			unlink('settings.ini.php');
+		}
+	} else {
+		copy(CONFIGEXAMPLE, CONFIG);
+	}
     checksetSHA();
 }
 
@@ -33,7 +41,7 @@ if (isset($_POST['function']) && isset($_POST['secret'])) {
 
 // Create a secret for communication to the server
 function createSecret() {
-	$config = new Config_Lite('settings.ini.php');
+	$config = new Config_Lite(CONFIG);
 	write_log("Creating server secret.");
     $text = uniqid("muximux-", true);
     $config->set("general","secret",$text);
@@ -116,7 +124,8 @@ function parse_ini()
     $splashScreen = $config->getBool('general', 'splashscreen', false);
     $userName = $config->get('general', 'userNameInput', 'admin');
     $passHash = $config->get('general', 'password', 'Muximux');
-    $authentication = $config->getBool('general', 'authentication', false);
+    $authentication = $config->get('general', 'authentication', 'off');
+	$authSettingsOnly = $config->getBool('general', 'autSettingsOnly', false);
     $rss = $config->getBool('general', 'rss', false);
 	$rssUrl = $config->get('general','rssUrl','https://www.wired.com/feed/');
     $myBranch = getBranch();
@@ -134,13 +143,13 @@ function parse_ini()
 	                        <div class='appDiv form-group'>
 	                            <label for='titleInput' class='col-xs-6 col-sm-4 col-lg-3 control-label left-label'>Main Title: </label>
 	                            <div class='appInput col-xs-6 col-sm-8 col-md-4 col-lg-8'>
-									<input id='titleInput' class='form-control form-control-sm settingInput' general_-_value' name='general_-_title' value='" . $title . "'>
+									<input id='titleInput' data-section='general' data-attribute='title' class='form-control form-control-sm settingInput general_-_title' name='general_-_title' value='" . $title . "'>
 								</div>
 	                        </div>
 	                        <div class='appDiv form-group'>
 								<label for='branch'  class='col-xs-6 col-sm-4 col-lg-3 control-label left-label'>Git branch: </label>
 								<div class='appInput col-xs-6 col-sm-2 col-md-4 col-lg-6'>
-									<select id='branch' class='form-control form-control-sm settingInput' name='general_-_branch'>".
+									<select id='branch' data-section='general' data-attribute='branch' class='form-control form-control-sm settingInput' name='general_-_branch'>".
 										$branchList ."
 									</select>
 								</div>
@@ -148,7 +157,7 @@ function parse_ini()
 							<div class='appDiv form-group'>
 								<label for='theme' class='col-xs-6 col-sm-4 col-lg-3 control-label left-label'>Theme: </label>
 								<div class='appInput col-xs-6 col-sm-2 col-md-4 col-lg-7'>
-									<select id='theme' class='form-control form-control-sm general_-_value settingInput' name='general_-_theme'>".
+									<select id='theme' data-section='general' data-attribute='theme' class='form-control form-control-sm general_-_value settingInput' name='general_-_theme'>".
 										listThemes() . "
 									</select>
 								</div>
@@ -156,65 +165,76 @@ function parse_ini()
 							<div class='appDiv form-group'>
 								<label for='general_-_color' class='control-label left-label col-xs-6 col-sm-4 col-lg-3'>Color:</label>
 								<div class='appInput col-xs-6 col-sm-8 col-md-4 col-lg-3'>
-									<input id='general_-_default' class='appsColor col-xs-6 col-sm-2 generalColor general_-_color settingInput' value='" .$themeColor."' name='general_-_color'>
+									<input id='general_-_default' data-section='general' data-attribute='color' class='appsColor col-xs-6 col-sm-2 generalColor general_-_color settingInput' value='" .$themeColor."' name='general_-_color'>
 								</div>
 	                        </div>
 	                        </div>
 	                        <div class='row justify-content-center'>
 	                        	<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 		                            <label for='updatepopup' data-toggle='tooltip' data-placement='top' title='Enable this to receive notifications of updates to Muximux.' class='btn btn-primary btn-sm btn-block". ($updatePopup ? ' active' : '') ."'>
-										<input id='updatepopup' name='general_-_updatepopup' type='checkbox'". ($updatePopup ? ' checked' : '') .">Update Alerts
+										<input id='updatepopup' data-section='general' data-attribute='updatepopup' name='general_-_updatepopup' type='checkbox'". ($updatePopup ? ' checked' : '') .">Update Alerts
 									</label>
 		                        </div>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 		                            <label for='splashscreen' data-toggle='tooltip' data-placement='top' title='Show the splash screen when Muximux loads.' class='btn btn-primary btn-sm btn-block". ($splashScreen ? ' active' : '') ."'>
-										<input id='splashscreen' class='settingInput' name='general_-_splashscreen' type='checkbox'".($splashScreen ? ' checked' : '') .">Splash Screen
+										<input id='splashscreen' data-section='general' data-attribute='splashscreen' class='settingInput' name='general_-_splashscreen' type='checkbox'".($splashScreen ? ' checked' : '') .">Splash Screen
 									</label>
 		                        </div>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 		                            <label for='mobileoverride' class='btn btn-primary btn-sm btn-block". ($mobileOverride ? ' active' : '') ."'>
-		                                <input id='mobileoverride' class='settingInput' name='general_-_mobileoverride' type='checkbox'".($mobileOverride ? ' checked' : '').">Mobile Override
+		                                <input id='mobileoverride' data-section='general' data-attribute='mobileoverride' class='settingInput' name='general_-_mobileoverride' type='checkbox'".($mobileOverride ? ' checked' : '').">Mobile Override
 									</label>
 		                        </div>
 		                        <div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 		                            <label for='tabcolor' class='btn btn-primary btn-sm btn-block". ($tabColorEnabled ? ' active' : '') ."'>
-										<input id='tabcolor' class='settingInput' name='general_-_tabcolor' type='checkbox'" . ($tabColorEnabled ? ' checked' : '').">App Colors
+										<input id='tabcolor' data-section='general' data-attribute='tabcolor' class='settingInput' name='general_-_tabcolor' type='checkbox'" . ($tabColorEnabled ? ' checked' : '').">App Colors
 									</label>
 		                        </div>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 		                            <label for='autohide' class='btn btn-primary btn-sm btn-block". ($autoHide ? ' active' : '') ."'>
-										<input id='autohide' class='settingInput' name='general_-_autohide' type='checkbox'".($autoHide ? ' checked' : '').">Auto-hide Bar
+										<input id='autohide' data-section='general' data-attribute='autohide' class='settingInput' name='general_-_autohide' type='checkbox'".($autoHide ? ' checked' : '').">Auto-hide Bar
 									</label>
 								</div>
 		                        <div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
-		                            <label for='authentication' class='btn btn-primary btn-sm btn-block". ($authentication ? ' active' : '') ."'>
-		                            	<input id='authentication' class='settingInput' name='general_-_authentication' type='checkbox'".($authentication ? ' checked' : '').">Authentication
-									</label>
-		                        </div>
-								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 		                        	<label for='rss' class='btn btn-primary btn-sm btn-block". ($rss ? ' active' : '') ."'>
-		                        		<input id='rss' class='settingInput' name='general_-_rss' type='checkbox' ".($rss ? 'checked' : ''). ">Splash RSS
+		                        		<input id='rss' data-section='general' data-attribute='rss' class='settingInput' name='general_-_rss' type='checkbox' ".($rss ? 'checked' : ''). ">Splash RSS
 									</label>
 								</div>
+							</div>
+							<div class='row justify-content-center'>
+								<span id='authHeader'>Authorization</span><br>
+								<div class='col-xs-12 col-md-4 med-gutters btn-group' data-toggle='buttons'>
+									<label class='btn btn-primary".($authentication === "off" ? " active":"")."'>
+										<input type='radio' data-section='general' data-attribute='authentication' class='settingInput' name='auths' id='off' autocomplete='off'".($authentication === "off" ? " checked":"").">None
+									</label>
+									<label class='btn btn-primary".($authentication === "login" ? " active":"")."'>
+										<input type='radio' data-section='general' data-attribute='authentication' class='settingInput' name='auths' id='login' autocomplete='off'".($authentication === "login" ? " checked":"").">Login
+									</label>
+									<label class='btn btn-primary".($authentication === "settingsOnly" ? " active":"")."'>
+										<input type='radio' data-section='general' data-attribute='authentication' class='settingInput' name='auths' id='settingsOnly' autocomplete='off'".($authentication === "settingsOnly" ? " checked":"").">Settings
+									</label>
+		                        </div>
 							</div>
 							<div class='row justify-content-center'>
 								<div class='userinput appDiv form-group rssUrlGroup'>
 									<label for='rssUrl' class='col-xs-4 control-label right-label'>Feed Url: </label>
 										<div class='col-xs-7 col-sm-5 col-md-3 col-lg-8'>
-										<input id='rssUrl' class='form-control settingInput' general_-_value' name='general_-_rssUrl' value='" . $rssUrl . "'>
+										<input id='rssUrl' data-section='general' data-attribute='rssUrl' class='form-control settingInput' general_-_value' name='general_-_rssUrl' value='" . $rssUrl . "'>
 									</div>
 								</div>
 								<div class='inputdiv appDiv form-group'>
 									<div class='userinput appDiv form-group'>
-										<label for='userNameInput' class='col-xs-4 control-label right-label'>Username: </label>
-											<div class='col-xs-7 col-sm-5 col-md-8'>
-											<input id='userNameInput' class='form-control settingInput' general_-_value' name='general_-_userNameInput' value='" . $userName . "'>
+										<label for='userNameInput' class='col-xs-6 col-lg-6 control-label left-label'>Username:</label>
+											<div class='col-xs-6 col-lg-5'>
+											<input id='userNameInput' data-section='general' data-attribute='userNameInput' class='form-control settingInput' general_-_value' name='general_-_userNameInput' value='" . $userName . "'>
 										</div>
 									</div>
+								</div>
+								<div class='inputdiv appDiv form-group'>
 									<div class='userinput appDiv form-group'>
-										<label for='password' class='col-xs-4 control-label right-label'>Password: </label>
-										<div class='col-xs-7 col-sm-5 col-md-8'>
-											<input id='password' type='password' autocomplete='new-password' class='form-control settingInput' general_-_value' name='general_-_password' value='" . $passHash . "'>
+										<label for='password' class='col-xs-6 col-lg-5 control-label left-label'>Password: </label>
+										<div class='col-xs-6 col-lg-5'>
+											<input id='password' data-section='general' data-attribute='password' type='password' autocomplete='new-password' class='form-control settingInput' general_-_value' name='general_-_password' value='" . $passHash . "'>
 										</div>
 									</div>
 								</div>
@@ -248,51 +268,51 @@ function parse_ini()
 							<div class='appDiv form-group'>
 									<label for='" . $section . "_-_url' class='col-xs-6 col-sm-4 control-label left-label'>Name: </label>
 									<div class='col-xs-6 col-sm-8 col-md-4 col-lg-8'>
-										<input data-section='" . $section . "' class='form-control form-control-sm settingInput" . $section . "_-_value' name='" . $section . "_-_name' value='" . $section . "'>
+										<input data-section='" . $section . "' data-attribute='name' class='form-control form-control-sm settingInput " . $section . "_-_value' name='" . $section . "_-_name' value='" . $section . "'>
 									</div>
 								</div>
 								<div class='appDiv form-group'>
 									<label for='" . $section . "_-_url' class='col-xs-6 col-sm-4 control-label left-label'>URL: </label>
 									<div class='col-xs-6 col-sm-8 col-md-4 col-lg-8'>
-										<input data-section='" . $section . "' class='form-control form-control-sm settingInput" . $section . "_-_value' name='" . $section . "_-_url' value='" . $url . "'>
+										<input data-section='" . $section . "' data-attribute='url' class='form-control form-control-sm settingInput " . $section . "_-_value' name='" . $section . "_-_url' value='" . $url . "'>
 									</div>
 								</div>
-								<div  class='appDiv form-group'>
+								<div  class='appDiv form-group col-lg-3'>
 									<label for='" . $section . "_-_scale' class='col-xs-6 col-sm-4 control-label col-form-label left-label'>Zoom: </label>
-									<div class='slider-outer col-xs-6 col-md-4 col-lg-3'>
-										<input data-section='" . $section . "' class='sliderInput' id='" . $section . "_-_scale' data-slider-id='" . $section . "_-_scale' type='text' data-slider-min='0' data-slider-max='100' data-slider-step='10' data-slider-value='".$scale."'/>
+									<div class='slider-outer col-xs-6 col-md-4 col-lg-8'>
+										<input data-section='" . $section . "' data-attribute='scale' class='sliderInput' id='" . $section . "_-_scale' data-slider-id='" . $section . "_-_scale' type='text' data-slider-min='0' data-slider-max='100' data-slider-step='10' data-slider-value='".$scale."'/>
 									</div>
 								</div>
 								<div class='appDiv form-group'>
 									<label for='" . $section . "_-_icon' class='col-xs-6 col-sm-4 control-label left-label'>Icon: </label>
-									<input data-section='" . $section . "' data-bv-notempty='true' class='iconpicker settingInput' data-bv-notempty-message='You must pick a font' type='text' name='" . $section . "_-_icon' id='fip_1' value='".$icon."' />
+									<input data-section='" . $section . "' data-attribute='icon' data-bv-notempty='true' class='iconpicker settingInput' data-bv-notempty-message='You must pick a font' type='text' name='" . $section . "_-_icon' id='fip_1' value='".$icon."' />
 								</div>
 								<div class='appDiv form-group colorDiv'>
 									<label for='" . $section . "_-_color' class='col-xs-6 col-sm-4 col-lg-3 control-label color-label left-label'>Color:</label>
 									<div class='appInput col-xs-6 col-sm-8 col-md-4 col-lg-3'>
-										<input data-section='" . $section . "' id='" . $section . "_-_color' class='form-control form-control-sm appsColor settingInput" . $section . "_-_color' value='" . $color . "' name='" . $section . "_-_color'>
+										<input data-section='" . $section . "' data-attribute='color' id='" . $section . "_-_color' class='form-control form-control-sm appsColor settingInput " . $section . "_-_color' value='" . $color . "' name='" . $section . "_-_color'>
 									</div>
 								</div>
 							</div>
 							<div class='row justify-content-center'>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 		                        	<label for='" . $section . "_-_enabled' class='btn btn-primary btn-sm btn-block ".($enabled ? 'active' : ''). "'>
-										<input data-section='" . $section . "' type='checkbox' class='settingInput' id='" . $section . "_-_enabled' name='" . $section . "_-_enabled'".($enabled ? ' checked' : '') .">Enabled
+										<input data-section='" . $section . "' data-attribute='enabled' type='checkbox' class='settingInput' id='" . $section . "_-_enabled' name='" . $section . "_-_enabled'".($enabled ? ' checked' : '') .">Enabled
 									</label>
 								</div>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 		                        	<label for='" . $section . "_-_landingpage' class='btn btn-primary btn-sm btn-block ".($landingpage ? 'active' : ''). "'>Splash Item
-										<input data-section='" . $section . "' type='checkbox' class='settingInput' id='" . $section . "_-_landingpage' name='" . $section . "_-_landingpage'".($landingpage ? ' checked' : '') .">
+										<input data-section='" . $section . "' data-attribute='landingpage' type='checkbox' class='settingInput' id='" . $section . "_-_landingpage' name='" . $section . "_-_landingpage'".($landingpage ? ' checked' : '') .">
 									</label>
 								</div>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 		                        	<label for='" . $section . "_-_dd' class='btn btn-primary btn-sm btn-block".($dd ? 'active' : ''). "'>
-										<input data-section='" . $section . "' type='checkbox' class='settingInput' id='" . $section . "_-_dd' name='" . $section . "_-_dd'".($dd ? ' checked' : '') .">Dropdown
+										<input data-section='" . $section . "' data-attribute='active' type='checkbox' class='settingInput' id='" . $section . "_-_dd' name='" . $section . "_-_dd'".($dd ? ' checked' : '') .">Dropdown
 									</label>
 								</div>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 									<label class='btn btn-primary btn-sm".($default ? ' active' : ''). "' for='" . $section . "_-_default' >
-										<input data-section='" . $section . "' type='radio' class='settingInput' name='" . $section . "_-_default' id='" . $section . "_-_default' autocomplete='off' ".($default ? ' checked' : '') .">Default
+										<input data-section='" . $section . "' data-attribute='default' type='radio' class='settingInput' name='" . $section . "_-_default' id='" . $section . "_-_default' autocomplete='off' ".($default ? ' checked' : '') .">Default
 									</label>
 								</div>
 							</div>
@@ -350,7 +370,7 @@ function log_contents() {
     $out = '<ul>
                 <div id="logContainer">
     ';
-    $filename = 'muximux.log';
+    $filename = LOGPATH;
 	$file = file($filename);
 	$file = array_reverse($file);
 	$lineOut = "";
@@ -403,18 +423,9 @@ function isDomainAvailible($domain) {
 	write_log("Header: ".$http_response_header[0]);
 	$result = (preg_match("/200 OK/",$http_response_header[0]) ? true : false);
 	write_log("CHeck result: ".$result);
+	return $result;
 }
 
-function setStartUrl() {
-	$file = dirname(__FILE__)."/manifest.json";
-	$json = json_decode(file_get_contents($file),true);
-	$url = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-	if (! $json) die();
-	if ($json['start_url'] !== $url) {
-		$json['start_url'] = $url;
-		file_put_contents($file, json_encode($json,JSON_PRETTY_PRINT));
-	}
-}
 
 // Check if the user changes tracking branch, which will change the SHA and trigger an update notification
 function checkBranchChanged() {
@@ -426,21 +437,6 @@ function checkBranchChanged() {
     } else {
         return false;
     }
-}
-
-function appColors() {
-	$config = new Config_Lite(CONFIG);
-	$vars = $config;
-	if (isset($vars['general'])) unset($vars['general']);
-	if (isset($vars['settings'])) unset($vars['settings']);
-	write_log("Vars: ".json_encode($vars));
-	$tabColors = $config->getBool("general","tabcolor",true);
-	$themeColor = $config->get("general","color","#31ac63");
-	$colors = [];
-	foreach ($vars as $title => $settings) {
-		$colors[strtolower($title)] = $tabColors ? $settings['color'] : $themeColor;
-	}
-	return $colors;
 }
 
 // Quickie to get the theme from settings
@@ -531,22 +527,22 @@ function menuItems() {
 			<ul class='main-nav'>
                 <li class='navbtn ".(($mobileoverride == "true") ? '' : 'hidden')."'>
                     <a id='override' title='Click this button to disable mobile scaling on tablets or other large-resolution devices.'>
-                        <span class='fa muximux-mobile fa-lg'></span>
+                        <span class='muximux-mobile mm-lg'></span>
                     </a>
                 </li>
                 <li class='navbtn ".(($splashScreen == "true") ? '' : 'hidden')."'>
 					<a id='showSplash' data-toggle='modal' data-target='#splashModal' data-title='Show Splash'>
-                		<span class='fa muximux-home4 fa-lg'></span>
+                		<span class='muximux-home4 mm-lg'></span>
                     </a>
                 </li>
                 <li class='navbtn ".(($authentication == "true") ? '' : 'hidden')."'>
                     <a id='logout' title='Click this button to log out of Muximux.'>
-                        <span class='fa muximux-sign-out fa-lg'></span>
+                        <span class='muximux-sign-out mm-lg'></span>
                     </a>
                 </li>
 				<li class='navbtn'>
                     <a id='reload' title='Double click your app in the menu, or press this button to refresh the current app.'>
-                        <span class='fa muximux-refresh fa-lg'></span>
+                        <span class='muximux-refresh mm-lg'></span>
                     </a>
                 </li>
 				
@@ -562,7 +558,7 @@ function menuItems() {
             $moButton ."
                 <li class='dd navbtn'>
                     <a id='hamburger'>
-                        <span class='fa muximux-bars fa-lg'></span>
+                        <span class='muximux-bars mm-lg'></span>
                     </a>
                     <ul class='drop-nav'>" .
                                 $dropdownmenu ."
@@ -666,7 +662,7 @@ function fetchBranches($skip) {
 // This checks whether we have a SHA, and if not, whether we are using git or zip updates and stores
 // the data accordingly
 function checksetSHA() {
-	$config = new Config_Lite('settings.ini.php');
+	$config = new Config_Lite(CONFIG);
 	$shaOut = $branchOut = $git = false;
     $shaIn = $config->get('settings','sha',false);
 	$branchIn = getBranch();
@@ -767,7 +763,7 @@ function frameContent() {
     if ($enabled && ($keyname != 'settings') && ($keyname != 'general')) {
 		$item .= "
 				<li data-content='" . $keyname . "' data-scale='" . $scale ."' ".($default ? "class='selected'" : '').">
-					<iframe sandbox='allow-forms allow-same-origin allow-pointer-lock allow-scripts allow-popups allow-modals allow-top-navigation'
+					<iframe sandbox='allow-forms allow-presentation allow-same-origin allow-pointer-lock allow-scripts allow-popups allow-modals allow-top-navigation'
 					allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true' scrolling='auto' data-title='" . $section["name"] . "' ".($default ? 'src' : 'data-src')."='" . $url . "'></iframe>
 				</li>";
         }
@@ -843,8 +839,6 @@ if (isset($_GET['secret'])) {
 		write_log("Invalid secret sent, dying.","ERROR");
 		die();
 	}
-	write_log("We have a secret request!");
-
 	if (isset($_GET['get']) && $_GET['get'] == 'hash') {
         if (exec_enabled() == true) {
 		$git = can_git();
@@ -861,7 +855,6 @@ if (isset($_GET['secret'])) {
     }
 
     if (isset($_GET['colors'])) {
-    	write_log("Got a request for colors.");
     	echo json_encode(appColors());
     	die;
     }
@@ -869,21 +862,29 @@ if (isset($_GET['secret'])) {
     if (isset($_GET['id']) && isset($_GET['value'])) {
 		$key = $_GET['id'];
 		$value = $_GET['value'];
-	    $section = 'general';
+		$section = $_GET['section'];
 	    $oldHash = getPassHash();
 	    $oldBranch = getBranch();
 	    $terminate = false;
-	    if (preg_match("/_-_/",$key)) {
-    		$sections = explode("_-_",$key);
-    		$section = $sections[0];
-    		$key = $sections[1];
-	    }
 	    if ($key == 'scale') $value = $value / 100;
     	    switch ($key) {
 		        case "password":
 			        if ($value != $oldHash) {
 				        write_log('Successfully updated password.', 'I');
 				        $value = password_hash($value, PASSWORD_BCRYPT);
+			        }
+			        break;
+		        case "name":
+		        	if ($section !== 'general') {
+		        		write_log("Need to rename the section here.");
+		        		if (isset($config[$section])) {
+		        			write_log("Found section $section");
+		        			foreach($config as $search => $data) {
+		        				if ($search == $section) $search = $value;
+					        }
+		        			saveConfig($config);
+		        			die();
+				        }
 			        }
 			        break;
 	        }

@@ -1,9 +1,10 @@
-var boxshadowprop, tabColor, isMobile, overrideMobile, colorData, hasDrawer, color, themeColor, tabs, activeTitle, splashNavBtnColor, rss, rssUrl, secret;
+var boxshadowprop, tabColor, isMobile, overrideMobile, hasDrawer, color, themeColor, tabs, activeTitle, splashNavBtnColor, rss, rssUrl, secret;
 var debugDD = false;
 jQuery(document).ready(function($) {
     hasDrawer = ($('#autohide-data').attr('data') === 'true');
     showSplash = ($('#splashscreen-data').attr('data') === 'true');
-    authentication = ($('#authentication-data').attr("data") === 'true');
+    authentication = $('#authentication-data').attr("data");
+    authentication = (! authentication === 'off');
     tabColor = ($("#tabcolor-data").attr('data') === 'true');
     secret = $('#secret-data').attr("data");
     rss = ($('#rss-data').attr("data") === 'true');
@@ -29,11 +30,11 @@ jQuery(document).ready(function($) {
     });
 
     var labelSide = "right";
-    console.log("initializing sliders");
     $('.sliderInput').bootstrapSlider({
         formatter: function(value) {
             return 'Current value: ' + value;
-        }
+        },
+        tooltip: 'show'
     });
 
     splashNavBtnColor = $('.splashNavBtn').css('background');
@@ -106,37 +107,12 @@ jQuery(document).ready(function($) {
         }
     });
 
-    $("#authenticationCheckbox").click(function () {
-        if ($(this).is(":checked")) // "this" refers to the element that fired the event
-        {
-            $('.inputdiv').slideDown('fast');
-        } else {
-            $('.inputdiv').slideUp('fast');
-        }
-    });
-    $("#splashscreenCheckbox").click(function () {
-        if ($(this).is(":checked")) // "this" refers to the element that fired the event
-        {
-            $('.rssGroup').slideDown('fast');
-        } else {
-            $('#rssCheckbox').attr('checked', false);
-            $('.rssGroup').slideUp('fast');
-            $('.rssUrlGroup').slideUp('fast');
-
-        }
-    });
-
-    $("#rssCheckbox").click(function () {
-        if ($(this).is(":checked")) // "this" refers to the element that fired the event
-        {
-            $('.rssUrlGroup').slideDown('fast');
-        } else {
-            $('.rssUrlGroup').slideUp('fast');
-        }
-    });
-
     $(".main-nav").find("li").click(function (e) {
         $(this).css("background-color", e.type === "mouseenter" ? themeColor : 'transparent')
+    })
+
+    $('.tooltip').click(function() {
+        console.log("Clicked");
     })
 
     $(".splashNavBtn").hover(function (e) {
@@ -162,12 +138,11 @@ jQuery(document).ready(function($) {
             $('#settingsModal').modal('show');
         }, 100);
     });
-    $("#splashLogout").click(function () {
+
+    $("#splashLogout","#logout").click(function () {
         window.location.href = '?logout';
     });
-    $("#logout").click(function () {
-        window.location.href = '?logout';
-    });
+
     // When settings modal is open, set title to "Settings"
     $('#settingsModal').on('show.bs.modal', function () {
         setTitle("Settings");
@@ -187,6 +162,7 @@ jQuery(document).ready(function($) {
         var activeTitle = $('.cd-tabs-content').find('.selected').children('iframe').attr("data-title");
         setTitle(activeTitle);
     });
+
     $(window).on('resize', function () {
         tabs.each(function () {
             var tab = $(this);
@@ -204,6 +180,10 @@ jQuery(document).ready(function($) {
     });
     $('#mobileoverrideCheckbox').click(function () {
         $('#autohideCheckbox').prop('checked', false);
+    });
+    $('.selector-button').click(function() {
+        var popup = $('this').siblings('.selector-popup');
+        if (popup.css("display") !== "none") console.log("It's showing again.");
     });
     // This triggers a menu close when mouse has left the drop nav.
     $('.dd').mouseleave(function () {
@@ -237,14 +217,25 @@ jQuery(document).ready(function($) {
         showPalette: true,
         preferredFormat: "hex",
         palette: [
-            ["#000", "#444", "#666", "#999", "#ccc", "#eee", "#f3f3f3", "#fff"],
-            ["#f00", "#f90", "#ff0", "#0f0", "#0ff", "#00f", "#90f", "#f0f"],
-            ["#f4cccc", "#fce5cd", "#fff2cc", "#d9ead3", "#d0e0e3", "#cfe2f3", "#d9d2e9", "#ead1dc"],
-            ["#ea9999", "#f9cb9c", "#ffe599", "#b6d7a8", "#a2c4c9", "#9fc5e8", "#b4a7d6", "#d5a6bd"],
-            ["#e06666", "#f6b26b", "#ffd966", "#93c47d", "#76a5af", "#6fa8dc", "#8e7cc3", "#c27ba0"],
-            ["#c00", "#e69138", "#f1c232", "#6aa84f", "#45818e", "#3d85c6", "#674ea7", "#a64d79"],
-            ["#900", "#b45f06", "#bf9000", "#38761d", "#134f5c", "#0b5394", "#351c75", "#741b47"],
-            ["#600", "#783f04", "#7f6000", "#274e13", "#0c343d", "#073763", "#20124d", "#4c1130"]
+            ["#ef9a9a","#e57373","#ef5350","#f44336","#e53935","#d32f2f","#c62828","#b71c1c"],
+            ["#f48fb1","#f06292","#ec407a","#e91e63","#d81b60","#c2185b","#ad1457","#880e4f"],
+            ["#ce93d8","#ba68c8","#ab47bc","#9c27b0","#8e24aa","#7b1fa2","#6a1b9a","#4a148c"],
+            ["#b39ddb","#9575cd","#7e57c2","#673ab7","#5e35b1","#512da8","#4527a0","#311b92"],
+            ["#9fa8da","#7986cb","#5c6bc0","#3f51b5","#3949ab","#303f9f","#283593","#1a237e"],
+            ["#90caf9","#64b5f6","#42a5f5","#2196f3","#1e88e5","#1976d2","#1565c0","#0d47a1"],
+            ["#81d4fa","#4fc3f7","#29b6f6","#03a9f4","#039be5","#0288d1","#0277bd","#01579b"],
+            ["#80deea","#4dd0e1","#26c6da","#00bcd4","#00acc1","#0097a7","#00838f","#006064"],
+            ["#80cbc4","#4db6ac","#26a69a","#009688","#00897b","#00796b","#00695c","#004d40"],
+            ["#a5d6a7","#81c784","#66bb6a","#4caf50","#43a047","#388e3c","#2e7d32","#1b5e20"],
+            ["#c5e1a5","#aed581","#9ccc65","#8bc34a","#7cb342","#689f38","#558b2f","#33691e"],
+            ["#e6ee9c","#dce775","#d4e157","#cddc39","#c0ca33","#afb42b","#9e9d24","#827717"],
+            ["#fff59d","#fff176","#ffee58","#ffeb3b","#fdd835","#fbc02d","#f9a825","#f57f17"],
+            ["#ffe082","#ffd54f","#ffca28","#ffc107","#ffb300","#ffa000","#ff8f00","#ff6f00"],
+            ["#ffcc80","#ffb74d","#ffa726","#ff9800","#fb8c00","#f57c00","#ef6c00","#e65100"],
+            ["#ffab91","#ff8a65","#ff7043","#ff5722","#f4511e","#e64a19","#d84315","#bf360c"],
+            ["#bcaaa4","#a1887f","#8d6e63","#795548","#6d4c41","#5d4037","#4e342e","#3e2723"],
+            ["#eeeeee","#e0e0e0","#bdbdbd","#9e9e9e","#757575","#616161","#424242","#212121"],
+            ["#b0bec5","#90a4ae","#78909c","#607d8b","#546e7a","#455a64","#37474f","#263238"]
         ]
     });
     $('.sp-replacer').addClass('form-control').addClass('form-control-sm');
@@ -262,11 +253,6 @@ jQuery(document).ready(function($) {
             $('#updateContainer').fadeOut("slow");
         });
     }
-
-    $.getJSON('muximux.php?secret=' + secret + '&colors', function (data) {
-        console.log("DATA: ", data);
-        colorData = data;
-    });
 
     tabs.each(function () {
         var tab = $(this),
@@ -321,7 +307,7 @@ jQuery(document).ready(function($) {
                     }, 200);
                 }
             }
-            selectedItem.ondblclick(function () {
+            selectedItem.dblclick(function () {
                 selectedContent.children('iframe').attr('src', selectedContent.children('iframe').attr('src'));
             });
         });
@@ -334,43 +320,51 @@ jQuery(document).ready(function($) {
 
 
     $("input").change(function() {
-        var id;
         if ($(this).hasClass("settingInput") && loaded) {
             id = $(this).attr('id');
+            var section = $(this).data('section');
+            var id = $(this).data('attribute');
+            console.log("Section: " + section + ", ID: " + id);
             var value;
-            if (($(this).attr('type') === 'checkbox') || ($(this).attr('type') === 'radio')) {
+            if (($(this).attr('type') === 'checkbox') || (($(this).attr('type') === 'radio') && id !== 'authentication')) {
                 value = $(this).is(':checked');
             } else {
                 value = $(this).val();
+                if ($(this).attr('type') === 'radio') {
+                    value = $("input[name='auths']:checked").attr('id');
+                }
             }
-            if (id.search("_-_url" >= 0)) {
-                var section = $(this).data("section");
-                console.log("Section: "+ section);
-                $('li[data-content="' + section + '"]').find('iframe').src(value).data(value);
-            }
-            if (id === 'authentication') {
-                $('.inputdiv').css('display', (value ? 'block' : 'none'));
-            }
-            if (id === 'rss') {
-                $('.rssUrlGroup').css('display', (value ? 'block' : 'none'));
-            }
+
             if (id === 'autohide') {
                 hasDrawer = value;
                 setSelectedColor();
                 resizeIframe(hasDrawer, isMobile);
             }
+
             if (id === 'mobileoverride') {
                 overrideMobile = value;
                 setSelectedColor();
                 resizeIframe(hasDrawer, isMobile);
             }
-            console.log("Sending param: " + id + " value: " + value);
 
-            $.get('muximux.php?secret=' + secret, {id: id, value: value}, function () {
+            console.log("Sending param: " + id + " value: " + value);
+            $.get('muximux.php?secret=' + secret, {section: section, id: id, value: value}, function () {
 
             });
-            updateElement(id,value);
+            updateElements(section, id,value);
         }
+    });
+    $('.sliderInput').on('slideStop',function() {
+        console.log("Sliding stopped;")
+        id = $(this).attr('id');
+        var section = $(this).data('section');
+        var id = $(this).data('attribute');
+        console.log("Section: " + section + ", ID: " + id);
+        var value;
+        value = $(this).val();
+        $.get('muximux.php?secret=' + secret, {section: section, id: id, value: value}, function () {
+
+        });
     });
     muximuxMobileResize();
 
