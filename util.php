@@ -277,17 +277,14 @@ function deleteContent($path){
 }
 
 function setStartUrl() {
-	$file = ( file_exists(dirname(__FILE__)."/manifest.json")) ? dirname(__FILE__)."/manifest.json" : dirname(__FILE__)."/manifest-template.json";
+	$fileOut = dirname(__FILE__)."/manifest.json";
+	$file = (file_exists($fileOut)) ? $fileOut : dirname(__FILE__)."/manifest_template.json";
 	$json = json_decode(file_get_contents($file),true);
 	$url = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-	if (! $json) die();
+	write_log("JSON: ".json_encode($json));
 	if ($json['start_url'] !== $url) {
 		$json['start_url'] = $url;
-		try {
-			file_put_contents($file, json_encode($json, JSON_PRETTY_PRINT));
-		} catch(Exception $e) {
-			write_log("Exception creating manifest.","ERROR");
-		}
+		file_put_contents($fileOut, json_encode($json,JSON_PRETTY_PRINT));
 	}
 }
 

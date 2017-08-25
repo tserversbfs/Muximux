@@ -18,3 +18,4 @@ log/
 /css/theme/
 !/css/theme/Classic.css
 !/css/theme/Modern.css
+/manifest.json
