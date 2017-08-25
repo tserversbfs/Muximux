@@ -35,10 +35,6 @@ if (!$_SESSION['secret']) {
 	$_SESSION['secret'] = createSecret();
 }
 
-if (isset($_POST['function']) && isset($_POST['secret'])) {
-	if ($_POST['secret'] == file_get_contents(SECRET)) write_ini();
-} 
-
 // Create a secret for communication to the server
 function createSecret() {
 	$config = new Config_Lite(CONFIG);
@@ -47,63 +43,6 @@ function createSecret() {
     $config->set("general","secret",$text);
     saveConfig($config);
     return $text;
-}
-
-// Save our settings on submit
-function write_ini()
-{
-    $config = new Config_Lite(CONFIG);
-    $oldHash = getPassHash();
-    $oldBranch = getBranch();
-    $terminate = false;
-    $authentication = $config->getBool('general','authentication',false);
-	
-    // Double check that a username post didn't sneak through
-    foreach ($_POST as $parameter => $value) {
-    	$splitParameter = explode('_-_', $parameter);
-	if ($splitParameter[1] == "username") {
-	    die;
-	}
-    }
-	unlink(CONFIG);
-    $config = new Config_Lite(CONFIG);
-    foreach ($_POST as $parameter => $value) {
-        $splitParameter = explode('_-_', $parameter);
-        $value = (($value == "on") ? "true" : $value );
-		switch ($splitParameter[1]) {
-			case "password":
-				if ($value != $oldHash) {
-					write_log('Successfully updated password.','I');
-					$value = password_hash($value, PASSWORD_BCRYPT);
-					$terminate = true;
-				}
-			break;
-			case "authentication":
-			    if ($value != $authentication) {
-					$terminate = true;
-				}
-			break;
-			case "theme":
-			    $value = strtolower($value);
-			break;
-			case "branch":
-				if ($value != $oldBranch) {
-					$config->set('settings','branch_changed',true);
-					$config->set('settings','sha','00');
-				} else {
-					$config->set('settings','branch_changed',false);
-				}
-			break;
-		}
-        
-        if ($parameter !== 'function' && $parameter !== 'secret')$config->set($splitParameter[0], $splitParameter[1], $value);
-    }
-    // save object to file
-    saveConfig($config);
-    if ($terminate) {
-        session_start();
-        session_destroy();
-    }
 }
 
 // Parse settings.php and create the Muximux elements
@@ -125,8 +64,7 @@ function parse_ini()
     $userName = $config->get('general', 'userNameInput', 'admin');
     $passHash = $config->get('general', 'password', 'Muximux');
     $authentication = $config->get('general', 'authentication', 'off');
-	$authSettingsOnly = $config->getBool('general', 'autSettingsOnly', false);
-    $rss = $config->getBool('general', 'rss', false);
+	$rss = $config->getBool('general', 'rss', false);
 	$rssUrl = $config->get('general','rssUrl','https://www.wired.com/feed/');
     $myBranch = getBranch();
 	
@@ -143,7 +81,7 @@ function parse_ini()
 	                        <div class='appDiv form-group'>
 	                            <label for='titleInput' class='col-xs-6 col-sm-4 col-lg-3 control-label left-label'>Main Title: </label>
 	                            <div class='appInput col-xs-6 col-sm-8 col-md-4 col-lg-8'>
-									<input id='titleInput' data-section='general' data-attribute='title' class='form-control form-control-sm settingInput general_-_title' name='general_-_title' value='" . $title . "'>
+									<input id='titleInput' data-section='general' data-attribute='title' class='form-control form-control-sm settingInput general_-_title' name='general_-_title' value='$title'>
 								</div>
 	                        </div>
 	                        <div class='appDiv form-group'>
@@ -165,7 +103,7 @@ function parse_ini()
 							<div class='appDiv form-group'>
 								<label for='general_-_color' class='control-label left-label col-xs-6 col-sm-4 col-lg-3'>Color:</label>
 								<div class='appInput col-xs-6 col-sm-8 col-md-4 col-lg-3'>
-									<input id='general_-_default' data-section='general' data-attribute='color' class='appsColor col-xs-6 col-sm-2 generalColor general_-_color settingInput' value='" .$themeColor."' name='general_-_color'>
+									<input id='general_-_default' data-section='general' data-attribute='color' class='appsColor col-xs-6 col-sm-2 generalColor general_-_color settingInput' value='$themeColor' name='general_-_color'>
 								</div>
 	                        </div>
 	                        </div>
@@ -219,14 +157,14 @@ function parse_ini()
 								<div class='userinput appDiv form-group rssUrlGroup'>
 									<label for='rssUrl' class='col-xs-4 control-label right-label'>Feed Url: </label>
 										<div class='col-xs-7 col-sm-5 col-md-3 col-lg-8'>
-										<input id='rssUrl' data-section='general' data-attribute='rssUrl' class='form-control settingInput' general_-_value' name='general_-_rssUrl' value='" . $rssUrl . "'>
+										<input id='rssUrl' data-section='general' data-attribute='rssUrl' class='form-control settingInput' value='$rssUrl'>
 									</div>
 								</div>
 								<div class='inputdiv appDiv form-group'>
 									<div class='userinput appDiv form-group'>
 										<label for='userNameInput' class='col-xs-6 col-lg-6 control-label left-label'>Username:</label>
 											<div class='col-xs-6 col-lg-5'>
-											<input id='userNameInput' data-section='general' data-attribute='userNameInput' class='form-control settingInput' general_-_value' name='general_-_userNameInput' value='" . $userName . "'>
+											<input id='userNameInput' data-section='general' data-attribute='userNameInput' class='form-control settingInput' value='$userName'>
 										</div>
 									</div>
 								</div>
@@ -234,7 +172,7 @@ function parse_ini()
 									<div class='userinput appDiv form-group'>
 										<label for='password' class='col-xs-6 col-lg-5 control-label left-label'>Password: </label>
 										<div class='col-xs-6 col-lg-5'>
-											<input id='password' data-section='general' data-attribute='password' type='password' autocomplete='new-password' class='form-control settingInput' general_-_value' name='general_-_password' value='" . $passHash . "'>
+											<input id='password' data-section='general' data-attribute='password' type='password' autocomplete='new-password' class='form-control settingInput' value='$passHash'>
 										</div>
 									</div>
 								</div>
@@ -251,7 +189,6 @@ function parse_ini()
 					<div id='sortable'>";
     foreach ($config as $section => $name) {
         if (is_array($name) && $section != "settings" && $section != "general") {
-            $name = $config->get($section, 'name', '');
             $url = $config->get($section, 'url', 'http://www.plex.com');
             $color = $config->get($section, 'color', '#000');
             $icon = $config->get($section, 'icon', 'muximux-play');
@@ -268,51 +205,51 @@ function parse_ini()
 							<div class='appDiv form-group'>
 									<label for='" . $section . "_-_url' class='col-xs-6 col-sm-4 control-label left-label'>Name: </label>
 									<div class='col-xs-6 col-sm-8 col-md-4 col-lg-8'>
-										<input data-section='" . $section . "' data-attribute='name' class='form-control form-control-sm settingInput " . $section . "_-_value' name='" . $section . "_-_name' value='" . $section . "'>
+										<input data-section='$section' data-attribute='name' class='form-control form-control-sm settingInput " . $section . "_-_value' name='" . $section . "_-_name' value='" . $section . "'>
 									</div>
 								</div>
 								<div class='appDiv form-group'>
 									<label for='" . $section . "_-_url' class='col-xs-6 col-sm-4 control-label left-label'>URL: </label>
 									<div class='col-xs-6 col-sm-8 col-md-4 col-lg-8'>
-										<input data-section='" . $section . "' data-attribute='url' class='form-control form-control-sm settingInput " . $section . "_-_value' name='" . $section . "_-_url' value='" . $url . "'>
+										<input data-section='$section' data-attribute='url' class='form-control form-control-sm settingInput " . $section . "_-_value' name='" . $section . "_-_url' value='" . $url . "'>
 									</div>
 								</div>
 								<div  class='appDiv form-group col-lg-3'>
 									<label for='" . $section . "_-_scale' class='col-xs-6 col-sm-4 control-label col-form-label left-label'>Zoom: </label>
 									<div class='slider-outer col-xs-6 col-md-4 col-lg-8'>
-										<input data-section='" . $section . "' data-attribute='scale' class='sliderInput' id='" . $section . "_-_scale' data-slider-id='" . $section . "_-_scale' type='text' data-slider-min='0' data-slider-max='100' data-slider-step='10' data-slider-value='".$scale."'/>
+										<input data-section='$section' data-attribute='scale' class='sliderInput' id='" . $section . "_-_scale' data-slider-id='" . $section . "_-_scale' type='text' data-slider-min='0' data-slider-max='100' data-slider-step='10' data-slider-value='".$scale."'/>
 									</div>
 								</div>
 								<div class='appDiv form-group'>
 									<label for='" . $section . "_-_icon' class='col-xs-6 col-sm-4 control-label left-label'>Icon: </label>
-									<input data-section='" . $section . "' data-attribute='icon' data-bv-notempty='true' class='iconpicker settingInput' data-bv-notempty-message='You must pick a font' type='text' name='" . $section . "_-_icon' id='fip_1' value='".$icon."' />
+									<input data-section='$section' data-attribute='icon' data-bv-notempty='true' class='iconpicker settingInput' data-bv-notempty-message='You must pick a font' type='text' name='" . $section . "_-_icon' id='fip_1' value='".$icon."' />
 								</div>
 								<div class='appDiv form-group colorDiv'>
 									<label for='" . $section . "_-_color' class='col-xs-6 col-sm-4 col-lg-3 control-label color-label left-label'>Color:</label>
 									<div class='appInput col-xs-6 col-sm-8 col-md-4 col-lg-3'>
-										<input data-section='" . $section . "' data-attribute='color' id='" . $section . "_-_color' class='form-control form-control-sm appsColor settingInput " . $section . "_-_color' value='" . $color . "' name='" . $section . "_-_color'>
+										<input data-section='$section' data-attribute='color' id='" . $section . "_-_color' class='form-control form-control-sm appsColor settingInput " . $section . "_-_color' value='" . $color . "' name='" . $section . "_-_color'>
 									</div>
 								</div>
 							</div>
 							<div class='row justify-content-center'>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 		                        	<label for='" . $section . "_-_enabled' class='btn btn-primary btn-sm btn-block ".($enabled ? 'active' : ''). "'>
-										<input data-section='" . $section . "' data-attribute='enabled' type='checkbox' class='settingInput' id='" . $section . "_-_enabled' name='" . $section . "_-_enabled'".($enabled ? ' checked' : '') .">Enabled
+										<input data-section='$section' data-attribute='enabled' type='checkbox' class='settingInput' id='" . $section . "_-_enabled' name='" . $section . "_-_enabled'".($enabled ? ' checked' : '') .">Enabled
 									</label>
 								</div>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 		                        	<label for='" . $section . "_-_landingpage' class='btn btn-primary btn-sm btn-block ".($landingpage ? 'active' : ''). "'>Splash Item
-										<input data-section='" . $section . "' data-attribute='landingpage' type='checkbox' class='settingInput' id='" . $section . "_-_landingpage' name='" . $section . "_-_landingpage'".($landingpage ? ' checked' : '') .">
+										<input data-section='$section' data-attribute='landingpage' type='checkbox' class='settingInput' id='" . $section . "_-_landingpage' name='" . $section . "_-_landingpage'".($landingpage ? ' checked' : '') .">
 									</label>
 								</div>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 		                        	<label for='" . $section . "_-_dd' class='btn btn-primary btn-sm btn-block".($dd ? 'active' : ''). "'>
-										<input data-section='" . $section . "' data-attribute='active' type='checkbox' class='settingInput' id='" . $section . "_-_dd' name='" . $section . "_-_dd'".($dd ? ' checked' : '') .">Dropdown
+										<input data-section='$section' data-attribute='active' type='checkbox' class='settingInput' id='" . $section . "_-_dd' name='" . $section . "_-_dd'".($dd ? ' checked' : '') .">Dropdown
 									</label>
 								</div>
 								<div class='col-xs-6 col-md-2 med-gutters btn-group' data-toggle='buttons'>
 									<label class='btn btn-primary btn-sm btn-rdo".($default ? ' active' : ''). "' for='" . $section . "_-_default' >
-										<input data-section='" . $section . "' data-attribute='default' type='radio' class='settingInput defaultInput' name='appDefault' id='" . $section . "_-_default' autocomplete='off' ".($default ? ' checked' : '') .">Default
+										<input data-section='$section' data-attribute='default' type='radio' class='settingInput defaultInput' name='appDefault' id='" . $section . "_-_default' autocomplete='off' ".($default ? ' checked' : '') .">Default
 									</label>
 								</div>
 							</div>

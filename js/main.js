@@ -43,7 +43,6 @@ jQuery(document).ready(function($) {
     splashBtn = $('.splashBtn');
     activeTitle = $('li .selected').attr("data-title");
     $('.logo').find('path').css('fill', themeColor);
-    console.log("Tabcolors are " + (tabColor ? "enabled" : "disabled"));
     if (tabColor) {
         $('.colorDiv').show();
     } else {
@@ -353,7 +352,8 @@ jQuery(document).ready(function($) {
                 value = section;
                 section = 'general';
             }
-            if (id === 'color' && section === 'general') {
+            if ((id === 'color') && (section === 'general')) {
+                console.log("General effing color...");
                 themeColor = value;
                 setSelectedColor();
             }
@@ -435,11 +435,8 @@ function muximuxMobileResize() {
             $(".cd-tabs-navigation nav").children('.navbtn').appendTo('.main-nav');
             $('.drop-nav').css('max-height', '');
             var barWidth = $('nav').width();
-            console.log("Total space is " + barWidth);
             var listWidth = $(".main-nav").width();
-            console.log("Nav width should be " + listWidth);
             var navSpace = barWidth - listWidth;
-            console.log("Leaving..." + (navSpace));
             var barFull = false;
 			var barArray = getSorted('.cd-tab','data-index');
 			barArray.each(function() {
@@ -487,7 +484,7 @@ function toggleClasses() {
 }
 // Clear color values from tabs
 function clearColors() {
-    var selected = $(".selected");
+    var selected = getSelected();
     selected.children("span").css("color", "");
     selected.css("color", "");
     selected.css("Box-Shadow", "");
@@ -495,29 +492,34 @@ function clearColors() {
 
 // Add relevant color value to tabs
 function setSelectedColor() {
-    color = (tabColor ? $('.selected').attr("data-color") : themeColor);
-    var isddItem = $('.selected').parents('ul.drop-nav').length;
+    var selectedTab = getSelected();
+    color = ((tabColor) && (selectedTab.length === 0) ? selectedTab.data("color") : themeColor);
     $('.droidtheme').replaceWith('<meta name="theme-color" class="droidtheme" content="' + color + '" />');
     $('.mstheme').replaceWith('<meta name="msapplication-navbutton-color" class="mstheme" content="' + color + '" />');
     $('.iostheme').replaceWith('<meta name="apple-mobile-web-app-status-bar-style" class="iostheme" content="' + color + '" />');
-    $('.logo path').css('fill',themeColor + '!important');
-    $('splashNav.btn').css('border-color',themeColor + '!important');
-    $('.card').css('border','1px solid themeColor !important')
+
+    console.log("Theme: " + themeColor + ", tabColor: " + tabColor);
+    $('.logo path').css('fill',themeColor + ' !important');
+    $('.splashNav .btn').css('border-color',themeColor + ' !important');
+    $('.card').css('border','1px solid ' + themeColor + ' !important');
+
+    // Quit here if there's no selected item.
+    if (selectedTab.length === 0) return;
+    var isddItem = selectedTab.parents('ul.drop-nav').length;
 
     if ((isMobile && !overrideMobile) || isddItem) {
         console.log("Should be setting a dd item color: "+ color);
-        $(".cd-tabs-bar").removeClass("drawer");
+        $(".cd-tabs-bar").removeClass("drawer drawerItem");
         $('.cd-tab').removeClass('drawerItem');
         $('.navbtn').removeClass('drawerItem');
-        $('.cd-tabs-bar').removeClass('drawerItem');
-        $(".selected").children("span").css("color", "" + color + "");
-        $(".selected").css('color', color);
+        selectedTab.children("span").css("color", "" + color + "");
+        selectedTab.css('color', color);
     } else {
         console.log("Should be setting a nav item color: " + color);
         var colString = "inset 0 5px 0 " + color + " !important";
         var colString2 = "Box-Shadow: inset 0 5px 0 " + color + " !important";
-        //reStyle('.selected','Box-Shadow',colString);
-        $(".selected").attr("style",colString2);
+        var selected = getSelected();
+        selected.attr("style",colString2);
         console.log("BS Property: " + colString);
         // Super hacky, but we're refrencing a placeholder div to quickly see if we have a drawer
         if (hasDrawer) {
@@ -530,11 +532,12 @@ function setSelectedColor() {
             $('.cd-tabs-bar').removeClass('drawerItem');
         }
 		jQuery.fn.reverse = [].reverse;
-    $('.drawerItem').mouseleave(function() {
-		$('.drawerItem').removeClass('full');
-    });
-    $('.drawerItem').mouseenter(function() {
-		$('.drawerItem').addClass('full');
-    });
+        var drawerItem = $('.drawerItem');
+        drawerItem.mouseleave(function() {
+            drawerItem.removeClass('full');
+        });
+        drawerItem.mouseenter(function() {
+            $('.drawerItem').addClass('full');
+        });
     }
 }

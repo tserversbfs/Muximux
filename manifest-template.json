@@ -15,6 +15,6 @@
     "theme_color": "#ffffff",
     "background_color": "#000000",
     "scope": "\/",
-    "start_url": "https:\/\/d8.dynu.net\/Muximux\/index.php",
+    "start_url": "/",
     "display": "standalone"
 }

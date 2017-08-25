@@ -14,6 +14,10 @@ var differenceDays;
 var json;
 
 
+function getSelected() {
+    return $('.selected');
+}
+
 function checkScrolling(tabs) {
     var totalTabWidth = parseInt(tabs.children('.cd-tabs-navigation').width()),
         tabsViewport = parseInt(tabs.width());
@@ -437,9 +441,10 @@ function updateBox($force) {
 function updateElements(section, id, value) {
 
     var elements = $("[data-content="+section+"]"),
-        elementTab = elements.children("a"),
-        elementSplash = elements.children("div"),
-        myFrame = elements.children("iframe");
+        elementTab = elements.find('a'),
+        elementSplash = elements.find("div"),
+        myFrame = elements.find("iframe");
+    console.log("TAB: " + elementTab.data('color'));
     if (section !== 'general') {
         switch (id) {
             case "url":
