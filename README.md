@@ -86,6 +86,25 @@ Browser HTTP_REFERER enforcement - Disable HTTP_REFERER enforcement check
 Now pfsense works in muximux :D
 (Thanks to nullredvector for the tip)
 
+NOTE FROM tserversbfs:
+
+The changes I have made to the git are for me and my site. I am NOT a php
+programmer. Obviously. Many changes I made are hardcoded into the actual php files
+as I am not able to add them into a configureation file.
+Synopsys of changes: (more or less)
+1: Index.php  - Replaced the rssfeed section on the left.
+          - Added the 'warning_object' section on the right. More later.
+2: muximux.php  - Added the ability to stack custom muximux menus
+            - Added the ability to have custom menus for each user.
+3: rssdog_iframe.html - Added custom rss feed replacing broken feed.
+4: warning_object...  - Added a right menubar to allow Admin and System messages
+          that fade after specific time. An expiry date is selected and these messages
+          fade at that time. These messages are sorted by expiry date. DO NOT edit
+          these files by hand. See the example bash file: mmWarningObject.sh file.
+
+I am willing to discuss these changes with interested persons. As I learn php I will remove the hard coding and add files to the configuration files. I would also like to fix some of the parts of this repository that are broken. Confidence is low.
+
+
 ## Screenshots
 #### Desktop screenshot (modern theme)
 ![Desktop screenshot, modern theme](https://i.imgur.com/LLsHzxX.png)
@@ -113,22 +132,3 @@ Now pfsense works in muximux :D
 
 > If you prefer a NodeJS version with a built-in webserver, a rewrite of Muximux (though not up to date) is available at
 > https://github.com/onedr0p/manage-this-node
-
-NOTE FROM tserversbfs:
-
-The changes I have made to the git are for me and my site. I am NOT a php
-programmer. Obviously. Many changes I made are hardcoded into the actual php files
-as I am not able to add them into a configureation file.
-Synopsys of changes: (more or less)
-1: Index.php  - Replaced the rssfeed section on the left.
-          - Added the 'warning_object' section on the right. More later.
-2: muximux.php  - Added the ability to stack custom muximux menus
-            - Added the ability to have custom menus for each user.
-3: rssdog_iframe.html - Added custom rss feed replacing broken feed.
-4: warning_object...  - Added a right menubar to allow Admin and System messages
-          that fade after specific time. An expiry date is selected and these messages
-          fade at that time. These messages are sorted by expiry date. DO NOT edit
-          these files by hand. See the example bash file: mmWarningObject.sh file.
-
-I am willing to discuss these changes with interested persons. As I learn php I will remove the hard coding and add files to the configuration files. I would also like to fix some of the parts of this repository that are broken. Confidence is low.
-
