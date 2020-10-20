@@ -91,7 +91,7 @@ NOTE FROM tserversbfs:
 The changes I have made to the git are for me and my site. I am NOT a php
 programmer. Obviously. Many changes I made are hardcoded into the actual php files
 as I am not able to add them into a configureation file.
-Synopsys of changes: (more or less)
+Synopsis of changes: (more or less)
 1: Index.php  - Replaced the rssfeed section on the left.
           - Added the 'warning_object' section on the right. More later.
 2: muximux.php  - Added the ability to stack custom muximux menus
