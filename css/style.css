@@ -8,7 +8,7 @@ html {
 }
 Primary style
 
--------------------------------- */
+/* -------------------------------- */
 
 *, *::after, *::before {
 	-webkit-box-sizing: border-box;
@@ -487,7 +487,7 @@ input[type='button'] {
 }
 
 .splashHeader {
-	width: 250px;
+	width: 270px;
 	border-radius: 5px;
 	position: relative;
 }
@@ -522,7 +522,7 @@ input[type='button'] {
 #headerWrapper {
 	position: fixed;
 	top: 0;
-	left 0;
+	left: 0;
 }
 
 .splashNavBtn {
@@ -741,7 +741,7 @@ checkbox, radio {
 }
 
 .smallLogo {
-	width: 210px;
+	width: 250px;
 	height: 100px;
 	margin-left: auto;
 	margin-right: auto;
@@ -797,14 +797,14 @@ checkbox, radio {
 
 iframe {
 	width: 100%;
-	height: 926px;
+	height: 926px; 
 	border: 0;
 	padding: 0;
 	margin: 0;
 	margin-top: 0px;
 	filter: none;
 	-webkit-filter: blur(0px);
-	-moz-filter': blur(0px);
+	-moz-filter: blur(0px);
  -ms-filter: blur(0px);
 	-o-filter: blur(0px);
 	filter: progid: DXImageTransform.Microsoft.Blur(PixelRadius='0');
@@ -815,7 +815,7 @@ iframe {
 	-o-transform-origin: 0 0;
 	-webkit-transform-origin: 0 0;
 	transform-origin: 0 0;
-}
+} 
 
 #splashModal {
 	height: 100%;

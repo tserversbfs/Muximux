@@ -34,12 +34,12 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
     <link rel="apple-touch-icon" sizes="180x180" href="images/favicon/apple-touch-icon.png?v=ngGoyLXN9n">
     <link rel="icon" type="image/png" href="images/favicon/favicon-32x32.png?v=ngGoyLXN9n" sizes="32x32">
     <link rel="icon" type="image/png" href="images/favicon/favicon-16x16.png?v=ngGoyLXN9n" sizes="16x16">
-    <link rel="manifest" href="images/favicon/manifest.json?v=ngGoyLXN9n">
+    <link rel="manifest" href="../images/favicon/manifest.json?v=ngGoyLXN9n">
     <link rel="mask-icon" href="images/favicon/safari-pinned-tab.svg?v=ngGoyLXN9n" color="#5bbad5">
     <link rel="shortcut icon" href="images/favicon/favicon.ico?v=ngGoyLXN9n">
     <meta name="apple-mobile-web-app-title" content="Muximux">
     <meta name="application-name" content="Muximux">
-    <meta name="msapplication-config" content="images/favicon/browserconfig.xml?v=ngGoyLXN9n">
+    <meta name="msapplication-config" content="../images/favicon/browserconfig.xml?v=ngGoyLXN9n">
     <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="css/loader.css"/>
     <link rel="stylesheet" href="combineify.php?type=css&files=css/cssreset.min.css,css/jquery-ui.min.css,css/bootstrap.min.css,css/bootstrap-iconpicker.min.css,css/font-awesome.min.css,css/font-muximux.css,css/font-pt_sans.css,css/style.css,css/spectrum.min.css,<?php echo getThemeFile();?>">
@@ -299,40 +299,39 @@ defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
     </div>
     <div id="splashModal" class="modal keyModal" role="dialog" data-keyboard="true">
         <div class="modal-dialog splashDialog">
-            <!-- Modal content-->
-                <div class="modal-header splashHeader">
-                        <div class="logo smallLogo">
-                            <div class="modal-title"><?php echo file_get_contents("images/muximux-white.svg") ?></div>
-                        </div>
-                        <div class="webTicker"></div>
-                        <div class="feedWrapper ti_wrapper">
-                            <div id="feed"></div>
-                        </div>
-
-                        <div id="splashNav">
-                            <button type="button" id="splashSettings" class="splashNavBtn btn btn-primary btn-lg" data-dismiss="modal"><span class="fa fa-cog icon-4x"></span></button>
-                            <button type="button" id="splashLog" class="splashNavBtn btn btn-primary btn-lg" data-dismiss="modal"><span class="fa fa-file-text-o icon-4x"></span></button>
-                            <button type="button" id="splashLogout" class="splashNavBtn btn btn-primary btn-lg"><span class="fa fa-sign-out icon-4x"></span></button>
-                        </div>
-
-                    </div>
-
-                <div id="splashContainer" class="alert">
-                <?php echo splashScreen() ?>
-
+            <div class="modal-header splashHeader">
+                <div class="logo smallLogo2" style="width:220px">
                 </div>
-
+                <div class="webTicker">
+                </div>
+                <div style="margin: 1px; height: auto;width:220px; overflow:hidden" >
+                    <iframe style="width:100%; height:750px; overflow: hidden" frameborder="0" class="rssdog" src="/rssdog_iframe.html">
+                    </iframe>
+                </div>
+            </div>
+            <div id="splashContainer" class="alert">
+                <?php echo splashScreen() ?>
+            </div>
+			<div class="modal-header splashHeader2" style="padding-right: 0px;padding-left: 5px; width: 270px;">
+                <div style="margin: 1px; height: auto;" >
+                    <div class="feedWrapper ti_wrapper" style="color: orange; padding-left: 1px; min-width: 265px;">
+                        <div id="orangebox" style="height: auto; color: orange; border: 1px; border-style: dashed; border-color: orange;">
+                            <h4 style="margin: 3px"><u style="color: OrangeRed; font-size: 14px;">Status Information:</u></h4>
+                            <iframe id="Warninghtml" style="color: orange;" width="100%" frameborder="2" type="text/html" src="./warning_object_combined.html">
+                        </iframe>
+                        </div>
+				    </div>
+                </div>
+            </div>
         </div>
-    <div id="splashBg"></div>
+        <div id="splashBg"></div>
     </div>
     <div id="updateContainer"></div>
     <?php echo metaTags(); ?>
     <script type="text/javascript" src="combineify.php?type=javascript&files=js/jquery-2.2.4.min.js,js/jquery-ui.min.js,js/jquery.form.min.js,js/bootstrap.min.js,js/iconset-muximux.js,js/bootstrap-iconpicker.min.js,js/main.js,js/functions.js,js/spectrum.min.js,js/modernizr-custom-3.3.1.min.js,js/jquery.ui.touch-punch.min.js,js/yrss.min.js,js/jquery.webticker.min.js"></script>
 
 
-<?php
-
-if ($upgrade) echo "<script type=\"text/javascript\">$('#upgradeModal').modal();</script>"; ?>
+<?php if ($upgrade) echo "<script type=\"text/javascript\">$('#upgradeModal').modal();</script>"; ?>
 
     <meta id='secret'>
 

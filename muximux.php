@@ -2,7 +2,40 @@
 /*
 * DO NOT CHANGE THIS FILE!
 */
-defined("CONFIG") ? null : define('CONFIG', 'settings.ini.php');
+$q_str = $_SERVER['QUERY_STRING']; 
+if(preg_match('[select|search|engine]', $q_str)) { 	
+	$q_str = '.' . $q_str;
+} else { 
+	$q_str = '';
+}
+/*
+Lines 5 to line 10. Allows Admin to have
+menu depth added to Muximux menus.
+In the above example [select|search|engine] allows 
+users to choose the [select|search|engine] submenus.
+#
+[422918newApplication]
+name = "Select"
+url = "https://mysite.url/?select"
+scale = 1
+icon = "muximux-equalizer"
+color = "#fce5cd"
+enabled = "true"
+*/
+$remuser = $_SERVER['REMOTE_USER']; 
+defined("CONFIG") ? null : define('CONFIG', $remuser . $q_str . '.settings.ini.php');
+$q_str = ''; $_SERVER['QUERY_STRING'] = '';
+/* 
+Lines 23 to 24 allows Admin to allow user specific
+menus in the following format: [select|search|engine].
+The user default menu, and the first to be shows is:
+username.settings.ini.php. With the addition of [select|search|engine]
+the users' menus would be:
+username.settings.ini.php
+username.select.settings.ini.php
+username.search.settingsini.php
+username.engine.settings.ini.php
+*/
 defined("CONFIGEXAMPLE") ? null : define('CONFIGEXAMPLE', 'settings.ini.php-example');
 defined("SECRET") ? null : define('SECRET', 'secret.txt');
 require dirname(__FILE__) . '/vendor/autoload.php';
@@ -41,10 +74,10 @@ function openFile($file, $mode) {
         } else if (PHP_SHLIB_SUFFIX === "dll") {
             $message .= "  Detected Windows system, refer to guides on how to set appropriate permissions."; //Can't get fileowner in a trivial manner.
         }
-	    write_log($message,'E');
-	    setStatus($message);
-        exit;
-    }
+	    // write_log($message,'E');
+	    // setStatus($message);
+        // exit;
+    } 
     return fopen($file, $mode);
 }
 
@@ -214,10 +247,10 @@ function parse_ini()
 								<input id='rssCheckbox' class='form-check-input form-control general_-_value' name='general_-_rss' type='checkbox' ".($rss ? 'checked' : '').">
 							</label>
 						</div>
-						<div class='userinput appDiv form-group rssUrlGroup'>
+						<div class='userinput appDiv form-group rssUrlGroup1'>
 							<label for='rssUrlInput' class='col-xs-4	 control-label right-label'>Feed Url: </label>
 								<div class='col-xs-7 col-sm-5 col-md-8'>
-								<input id='rssUrlInput' type='text' class='form-control' general_-_value' name='general_-_rssUrl' value='" . $rssUrl . "'>
+                                <input id='rssUrlInput' type='text' class='form-control' general_-_value' name='general_-_rssUrl' value='" . $rssUrl . "'>
 							</div>
 						</div>
 						<div class='inputdiv appDiv form-group'>
@@ -253,6 +286,7 @@ function parse_ini()
             $icon = $config->get($section, 'icon', 'muximux-play');
 	    $icon = str_replace('fa-','muximux-',$icon);
 	    $scale = $config->get($section, 'scale', '1');
+        $ifram = $config->get($section,'ifram', '1');
             $default = $config->getBool($section, 'default', false);
             $enabled = $config->getBool($section, 'enabled', true);
             $landingpage = $config->getBool($section, 'landingpage', false);
@@ -508,11 +542,6 @@ function menuItems() {
                 <nav>";
     $dropdownmenu = "
 							<li>
-								<a data-toggle='modal' data-target='#settingsModal' data-title='Settings'>
-									<span class='fa fa-cog'></span>Settings
-								</a>
-							</li>
-							<li>
 								<a id='logModalBtn' data-toggle='modal' data-target='#logModal' data-title='Log Viewer'>
 									<span class='fa fa-file-text-o'></span> Log
 								</a>
@@ -531,6 +560,7 @@ function menuItems() {
             $icon = $config->get($keyname, 'icon', 'fa-play');
 	    $icon = str_replace('fa-','muximux-',$icon);
 	    $scale = $config->get($keyname, 'scale', '1');
+        $ifram = $config->get($keyname,'ifram', '1');
             $default = $config->getBool($keyname, 'default', false);
             $enabled = $config->getBool($keyname, 'enabled', false);
             $landingpage = $config->getBool($keyname, 'landingpage', false);
@@ -812,7 +842,7 @@ $tags = "
     return $tags;
 }
 
-// Set up the actual iFrame contents, as the name implies.
+// Set up the actual ] contents, as the name implies.
 function frameContent() {
     $config = new Config_Lite(CONFIG);
     if (empty($item)) $item = '';
@@ -821,16 +851,29 @@ function frameContent() {
     $enabled = $config->getBool($keyname,'enabled',true);
     $default = $config->getBool($keyname,'default',false);
     $scale = $config->get($keyname,'scale',1);
+    $ifram = $config->get($keyname,'ifram', '1');
     $url = $section["url"];
     $url=($landingpage ? "?landing=" . $keyname: $url);
     if ($enabled && ($keyname != 'settings') && ($keyname != 'general')) {
-		$item .= "
-				<li data-content='" . $keyname . "' data-scale='" . $section["scale"] ."' ".($default ? "class='selected'" : '').">
-					<iframe sandbox='allow-forms allow-same-origin allow-pointer-lock allow-scripts allow-popups allow-modals allow-top-navigation'
+		if ($ifram >= 1) {
+    		$item .= "
+				<li data-content='" . $keyname . "' data-ifram='" . $ifram . "' data-scale='" . $section["scale"] ."' ".($default ? "class='selected'" : '').">
+					<iframe 
 					allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true' scrolling='auto' data-title='" . $section["name"] . "' ".($default ? 'src' : 'data-src')."='" . $url . "'></iframe>
-				</li>";
-        }
+				</li>"; // allow-same-origin sandbox='allow-forms  allow-pointer-lock allow-scripts allow-popups allow-modals allow-top-navigation'
+        	}
+        if ($ifram == 0) {
+    	$item .= "<li data-content='" . $keyname . "' data-ifram='" . $ifram . "' data-scale='" . $section["scale"] ."' ".($default ? "class='selected'" : '').">
+        	<div>
+            <p>
+            <a href='https://skytorrents.to/' target='_blank' style='height: 400px;width: 550px;padding-bottom: 20px;padding-left: 20px;
+            padding-right: 20px;line-height: 20px;display: inline-block;padding-top: 0px;color: azure;'> Click Here for $url </a>
+            </p>
+        	</div></li>"; //<a href='" . $url . "' rel='noopener noreferrer' target='_blank>'" . $url . "'</a>
+    	}
     }
+        }
+
     return $item;
 }
 // Build a landing page.
